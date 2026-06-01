@@ -291,6 +291,39 @@ test/               # vitest suite (rng, themes, generator, cli)
 | `npm run lint`      | ESLint over the project.                            |
 | `npm run check`     | Typecheck + lint + test (CI gate).                  |
 
+## ❓ FAQ
+
+**What is this?**
+A free, open-source **lorem ipsum / placeholder-text generator** — available as a
+zero-dependency TypeScript library, a CLI, and an installable web app. It
+generates dummy text in seventeen themed voices.
+
+**What actually _is_ lorem ipsum?**
+Not gibberish. It's scrambled Latin from Cicero's _de Finibus Bonorum et Malorum_
+(45 BC), a treatise on pleasure and pain — `dolorem ipsum` means "pain itself."
+This generator is built right on that genuine source, so you can dial from raw
+Cicero Latin up to a fully styled voice.
+
+**Is it free?** Yes — MIT-licensed and open source.
+
+**Do I need to install anything?**
+No. Use the **[live web app](https://remixmb.github.io/yass-kween-dolor-ipsum/)**
+in any browser, press <kbd>C</kbd> to copy, and you're done. Developers can also
+`npm install` the library or run the `yass-ipsum` CLI.
+
+**Does it work offline?**
+Yes. The web app is an installable PWA — add it to your home screen or desktop
+and it keeps generating placeholder text with no connection.
+
+**Can I get the same output every time?**
+Yes. Pass a `seed` (in the API/CLI) or share the demo's permalink — output is
+deterministic, so the same seed and options always produce byte-for-byte
+identical text. Great for tests, snapshots, and design reviews.
+
+**Can I add my own theme?**
+Absolutely — a theme is just a small data object. See
+[Custom themes](#custom-themes).
+
 ## 📄 License
 
 [MIT](./LICENSE) © Remi M.

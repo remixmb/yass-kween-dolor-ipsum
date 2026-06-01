@@ -57,7 +57,49 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  verify:
+    name: Verify deployment
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Smoke-test the live page and its assets
+        env:
+          URL: ${{ needs.deploy.outputs.page_url }}
+        run: |
+          set -euo pipefail
+          echo "Verifying $URL"
+          body=""
+          ok=""
+          for i in $(seq 1 8); do
+            body="$(curl -fsSL --max-time 25 "$URL" || true)"
+            if echo "$body" | grep -q "yass-kween-dolor-ipsum" \
+               && echo "$body" | grep -qi "lorem ipsum"; then
+              ok="1"; break
+            fi
+            echo "Attempt $i: page not ready yet, retrying in 15s..."
+            sleep 15
+          done
+          if [ -z "$ok" ]; then
+            echo "::error::Deployed page did not serve the expected HTML in time."
+            exit 1
+          fi
+          echo "✅ HTML is live and contains the expected markers."
+          base="${URL%/}"
+          fail=""
+          for asset in $(echo "$body" | grep -oE 'assets/[^"]+\.(js|css)' | sort -u); do
+            code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 25 "$base/$asset")"
+            echo "  $asset -> HTTP $code"
+            [ "$code" = "200" ] || fail="1"
+          done
+          if [ -n "$fail" ]; then
+            echo "::error::One or more built assets did not return HTTP 200."
+            exit 1
+          fi
+          echo "✅ All built JS/CSS assets serve correctly. Deployment verified."

@@ -79,21 +79,28 @@ describe('generate — html format', () => {
   });
 
   it('escapes HTML-unsafe characters from custom theme content', () => {
+    // Every word carries all three unsafe characters, so the assertions hold
+    // regardless of which words the (seeded) RNG samples.
     const sneaky: Theme = {
       id: 'sneaky',
       name: 'Sneaky',
       description: 'injection attempt',
       emoji: '🐍',
-      words: ['<script>', 'a&b', '<b>'],
+      words: ['<a&b>'],
     };
-    const html = generate({ theme: sneaky, units: 'words', count: 6, format: 'html' });
-    // No raw tags or ampersands leak through…
-    expect(html).not.toMatch(/<script>/);
-    expect(html).not.toMatch(/<b>/);
-    expect(html).not.toMatch(/&(?!(amp|lt|gt);)/);
-    // …they are rendered as entities instead.
-    expect(html).toContain('&lt;script&gt;');
-    expect(html).toContain('a&amp;b');
+    const html = generate({
+      theme: sneaky,
+      units: 'words',
+      count: 5,
+      format: 'html',
+      seed: 'x',
+    });
+    const inner = html.replace(/^<p>/, '').replace(/<\/p>$/, '');
+    // No raw markup characters or bare ampersands survive in the content.
+    expect(inner).not.toMatch(/[<>]/);
+    expect(inner).not.toMatch(/&(?!(amp|lt|gt);)/);
+    // The unsafe word is rendered as entities instead.
+    expect(html).toContain('&lt;a&amp;b&gt;');
     // The wrapping <p> tags themselves are intact.
     expect(html.startsWith('<p>')).toBe(true);
     expect(html.endsWith('</p>')).toBe(true);

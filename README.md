@@ -9,6 +9,8 @@ friendly CLI, and a slick interactive web demo. Generate filler text in seven
 distinct voices — from sassy **Yass Kween** to **Corporate Synergy** to
 **Pirate Shanty**.
 
+**[▶ Live demo](https://remixmb.github.io/yass-kween-dolor-ipsum/)**
+
 [Themes](#-themes) · [Quick start](#-quick-start) · [API](#-api) · [CLI](#️-cli) · [Web demo](#-web-demo) · [Design](#️-design-notes)
 
 </div>

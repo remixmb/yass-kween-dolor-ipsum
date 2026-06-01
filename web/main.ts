@@ -12,12 +12,8 @@ import {
 } from '../src/index.js';
 import './style.css';
 
-/**
- * The YouTube video about the mystery behind lorem ipsum's origins.
- * TODO(remi): swap this for the exact video — placeholder search for now.
- */
-const INSPIRATION_VIDEO_URL =
-  'https://www.youtube.com/results?search_query=mystery+behind+lorem+ipsum+origins';
+/** The YouTube video about the mystery behind lorem ipsum's origins. */
+const INSPIRATION_VIDEO_URL = 'https://www.youtube.com/watch?v=kL1PDqzqhM4';
 
 /** Small typed helper for required DOM lookups. */
 function el<T extends HTMLElement>(id: string): T {

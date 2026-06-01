@@ -126,7 +126,8 @@ generate({
 > from Cicero's _de Finibus Bonorum et Malorum_ (45 BC), a treatise on pleasure
 > and pain, where _dolorem ipsum_ means "pain itself." Yass Kween is built right
 > on top of that genuine source. Read any theme's backstory with `theme.origin`
-> (or `yass-ipsum --lore`).
+> (or `yass-ipsum --lore`), and watch
+> [the mystery of lorem ipsum's origins](https://www.youtube.com/watch?v=kL1PDqzqhM4).
 
 ### 🥚 A hidden Easter egg
 

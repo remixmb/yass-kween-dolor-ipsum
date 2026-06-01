@@ -185,8 +185,9 @@ export function jabbaLaugh(): void {
 export function enterCantina(): void {
   const c = ensureContext();
   if (!c) return;
-  jabbaLaugh();
+  // Already in the cantina: don't stack a second laugh/loop on top of the first.
   if (running) return;
+  jabbaLaugh();
   running = true;
   step = 0;
   nextStepTime = c.currentTime + 0.6; // let the laugh breathe first
@@ -210,7 +211,7 @@ export function leaveCantina(): void {
     master.gain.cancelScheduledValues(now);
     master.gain.setValueAtTime(master.gain.value, now);
     master.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
-    // Restore level for the next summon.
-    master.gain.setValueAtTime(0.16, now + 0.5);
+    // The level is restored by the next enterCantina(), so we don't re-raise it
+    // here — doing so would pop any loop tail still in the lookahead window.
   }
 }

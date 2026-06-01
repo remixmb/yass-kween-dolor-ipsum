@@ -507,6 +507,33 @@ export function App() {
     return () => window.removeEventListener('keydown', onKey);
   }, [showToast]);
 
+  // Quick-use shortcuts: C copies, S shuffles — but never while typing in a
+  // field, with a modifier held (so Cmd/Ctrl+C still works), or over an overlay.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey || eggBurst || prideBurst) return;
+      const el = document.activeElement as HTMLElement | null;
+      const tag = el?.tagName;
+      if (
+        tag === 'INPUT' ||
+        tag === 'TEXTAREA' ||
+        tag === 'SELECT' ||
+        el?.isContentEditable
+      )
+        return;
+      const k = e.key.toLowerCase();
+      if (k === 'c') {
+        e.preventDefault();
+        copy(copyText, 'Copied ✨');
+      } else if (k === 's') {
+        e.preventDefault();
+        doShuffle();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [copyText, eggBurst, prideBurst]);
+
   function selectTheme(id: string) {
     const th = getTheme(id);
     if (th?.hidden) {
@@ -868,6 +895,9 @@ export function App() {
               &#128279; Copy link
             </button>
           </div>
+          <p className="kbd-hint" aria-hidden="true">
+            <kbd>C</kbd> copy &middot; <kbd>S</kbd> shuffle
+          </p>
         </section>
 
         {devPanel && (

@@ -271,8 +271,17 @@ function buildWords(opts: ResolvedOptions): string {
   return words.slice(0, opts.count).join(' ');
 }
 
+/**
+ * Escape the characters that are unsafe in HTML element content. Keeps `html`
+ * output injection-safe even for custom themes whose vocabulary might contain
+ * `<`, `>`, or `&`.
+ */
+function escapeHtml(text: string): string {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 function wrapHtml(blocks: string[]): string {
-  return blocks.map((block) => `<p>${block}</p>`).join('\n');
+  return blocks.map((block) => `<p>${escapeHtml(block)}</p>`).join('\n');
 }
 
 /** The text plus metadata about how it was produced. */
@@ -288,7 +297,7 @@ export interface GenerateResult {
 function buildText(opts: ResolvedOptions): string {
   if (opts.units === 'words') {
     const words = buildWords(opts);
-    return opts.format === 'html' ? `<p>${words}</p>` : words;
+    return opts.format === 'html' ? `<p>${escapeHtml(words)}</p>` : words;
   }
 
   const blocks: string[] = [];

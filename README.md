@@ -29,7 +29,7 @@ distinct voices — from sassy **Yass Kween** to **Corporate Synergy** to
 - **Three units** — `words`, `sentences`, or `paragraphs`, plus optional `text` or `html` output.
 - **Zero runtime dependencies.** The core is plain, portable TypeScript.
 - **Works everywhere** — library (ESM + CJS), CLI, and browser. Ships full type declarations.
-- **Tested & typed** — 73 tests, ~98% coverage, strict TypeScript, ESLint + Prettier, CI.
+- **Tested & typed** — 74 tests, ~98% coverage, strict TypeScript, ESLint + Prettier, CI.
 
 ## 🎭 Themes
 
@@ -126,7 +126,8 @@ generate({
 > from Cicero's _de Finibus Bonorum et Malorum_ (45 BC), a treatise on pleasure
 > and pain, where _dolorem ipsum_ means "pain itself." Yass Kween is built right
 > on top of that genuine source. Read any theme's backstory with `theme.origin`
-> (or `yass-ipsum --lore`).
+> (or `yass-ipsum --lore`), and watch
+> [the mystery of lorem ipsum's origins](https://www.youtube.com/watch?v=kL1PDqzqhM4).
 
 ### 🥚 A hidden Easter egg
 
@@ -203,9 +204,17 @@ yass-ipsum --seed jabba                      # 🥚 ...what's this?
 ## 🌐 Web demo
 
 `npm run dev` starts a Vite dev server with an interactive playground: pick a
-theme, tune the unit/count, set a seed, toggle HTML, and copy the result with
+theme, tune the unit/count, slide the temperature dial, and copy the result with
 one click. Build a static bundle with `npm run build:web` (output in
 `dist-web/`).
+
+Every result is **reproducible and shareable** — the seed is always shown and
+editable, **🎲 Shuffle** rolls a new one, and **🔗 Copy link** yields a
+permalink that encodes the full state (`?theme=…&seed=…&temp=…&units=…`), so
+anyone who opens it sees the exact same output.
+
+> **HTML output is escaped.** When `format: 'html'`, content is HTML-escaped
+> (`&`, `<`, `>`), so even a custom theme's vocabulary can't inject markup.
 
 ## 🏗️ Design notes
 

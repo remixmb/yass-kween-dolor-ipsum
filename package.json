@@ -1,0 +1,73 @@
+{
+  "name": "yass-kween-dolor-ipsum",
+  "version": "1.0.0",
+  "description": "A themed placeholder-text generator. Lorem ipsum, but make it iconic — sassy, corporate, pirate, hacker, and more.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Remi M.",
+  "keywords": [
+    "lorem-ipsum",
+    "ipsum",
+    "placeholder",
+    "filler-text",
+    "dummy-text",
+    "generator",
+    "cli",
+    "typescript"
+  ],
+  "homepage": "https://github.com/remixmb/yass-kween-dolor-ipsum#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/remixmb/yass-kween-dolor-ipsum.git"
+  },
+  "bugs": {
+    "url": "https://github.com/remixmb/yass-kween-dolor-ipsum/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "bin": {
+    "yass-ipsum": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "vite",
+    "build:web": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write \"**/*.{ts,js,json,md,css,html}\"",
+    "format:check": "prettier --check \"**/*.{ts,js,json,md,css,html}\"",
+    "check": "npm run typecheck && npm run lint && npm run test"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@typescript-eslint/eslint-plugin": "^8.18.0",
+    "@typescript-eslint/parser": "^8.18.0",
+    "@vitest/coverage-v8": "^2.1.8",
+    "eslint": "^9.17.0",
+    "prettier": "^3.4.2",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.5",
+    "vitest": "^2.1.8"
+  }
+}

@@ -1,0 +1,462 @@
+:root {
+  --bg: #0b0a14;
+  --surface: rgba(255, 255, 255, 0.04);
+  --surface-strong: rgba(255, 255, 255, 0.07);
+  --border: rgba(255, 255, 255, 0.1);
+  --text: #f4f1fb;
+  --muted: #a79fc4;
+  --pink: #ff5fd2;
+  --purple: #9b5cff;
+  --cyan: #4be3ff;
+  --radius: 18px;
+  --shadow: 0 20px 60px -20px rgba(0, 0, 0, 0.7);
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Animated aurora background */
+.aurora {
+  position: fixed;
+  inset: -30vmax;
+  z-index: 0;
+  background:
+    radial-gradient(
+      40vmax 40vmax at 20% 20%,
+      rgba(255, 95, 210, 0.28),
+      transparent 60%
+    ),
+    radial-gradient(
+      45vmax 45vmax at 80% 25%,
+      rgba(155, 92, 255, 0.26),
+      transparent 60%
+    ),
+    radial-gradient(40vmax 40vmax at 50% 90%, rgba(75, 227, 255, 0.2), transparent 60%);
+  filter: blur(20px);
+  animation: drift 22s ease-in-out infinite alternate;
+}
+
+@keyframes drift {
+  0% {
+    transform: translate3d(-3%, -2%, 0) rotate(0deg) scale(1);
+  }
+  100% {
+    transform: translate3d(4%, 3%, 0) rotate(8deg) scale(1.1);
+  }
+}
+
+.shell {
+  position: relative;
+  z-index: 1;
+  max-width: 880px;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 4rem) clamp(1rem, 4vw, 2rem) 3rem;
+}
+
+/* Hero */
+.hero {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.kicker {
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin: 0 0 0.75rem;
+}
+
+.hero h1 {
+  font-size: clamp(2.2rem, 7vw, 4rem);
+  line-height: 1.05;
+  margin: 0 0 1rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(100deg, var(--pink), var(--purple) 55%, var(--cyan));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.hero h1 .dim {
+  opacity: 0.55;
+  font-weight: 600;
+}
+
+.tagline {
+  max-width: 36rem;
+  margin: 0 auto;
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+
+.tagline em {
+  color: var(--text);
+  font-style: italic;
+}
+
+/* Panel */
+.panel,
+.output-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: clamp(1.1rem, 3vw, 1.75rem);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow);
+}
+
+.panel {
+  margin-bottom: 1.5rem;
+}
+
+/* Theme chips */
+.themes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.95rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-strong);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.chip:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.chip.active {
+  border-color: transparent;
+  background: linear-gradient(100deg, var(--pink), var(--purple));
+  color: #fff;
+  box-shadow: 0 8px 24px -8px rgba(255, 95, 210, 0.6);
+}
+
+.chip-emoji {
+  font-size: 1.05rem;
+}
+
+/* Controls */
+.controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.1rem 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.field-label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.field-label small {
+  text-transform: none;
+  letter-spacing: 0;
+  opacity: 0.7;
+}
+
+.field-label output {
+  font-family: var(--mono);
+  color: var(--pink);
+  font-weight: 600;
+}
+
+select,
+input[type='text'] {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+select:focus,
+input[type='text']:focus {
+  outline: none;
+  border-color: var(--purple);
+  box-shadow: 0 0 0 3px rgba(155, 92, 255, 0.25);
+}
+
+input[type='range'] {
+  width: 100%;
+  accent-color: var(--pink);
+  cursor: pointer;
+}
+
+.toggles {
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.92rem;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.toggle input {
+  accent-color: var(--purple);
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+/* Buttons */
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.btn {
+  flex: 1;
+  min-width: 130px;
+  padding: 0.8rem 1.2rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-strong);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform 0.12s ease,
+    filter 0.12s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn-primary {
+  border-color: transparent;
+  background: linear-gradient(100deg, var(--pink), var(--purple));
+  color: #fff;
+  box-shadow: 0 10px 30px -10px rgba(155, 92, 255, 0.7);
+}
+
+.btn.pulse {
+  animation: pulse 0.4s ease;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 95, 210, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 0 16px rgba(255, 95, 210, 0);
+  }
+}
+
+/* Output */
+.output-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.stats {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.output {
+  font-size: 1.05rem;
+  color: var(--text);
+}
+
+.output p {
+  margin: 0 0 1rem;
+}
+
+.output p:last-child {
+  margin-bottom: 0;
+}
+
+.output.code {
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--cyan);
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1rem;
+  border-radius: 12px;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  margin-top: 2.5rem;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.footer a {
+  color: var(--pink);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.footer a:hover {
+  text-decoration: underline;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translate(-50%, 150%);
+  padding: 0.7rem 1.2rem;
+  border-radius: 999px;
+  background: linear-gradient(100deg, var(--pink), var(--purple));
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.9rem;
+  box-shadow: var(--shadow);
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  z-index: 10;
+}
+
+.toast.show {
+  transform: translate(-50%, 0);
+}
+
+/* Origin / lore disclosure */
+.lore {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.lore summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text);
+  list-style: none;
+}
+
+.lore summary::-webkit-details-marker {
+  display: none;
+}
+
+.lore summary::before {
+  content: '▸';
+  display: inline-block;
+  margin-right: 0.4rem;
+  transition: transform 0.15s ease;
+}
+
+.lore[open] summary::before {
+  transform: rotate(90deg);
+}
+
+.lore p {
+  margin: 0.75rem 0 0;
+}
+
+/* The hidden Huttese chip, once summoned by Jabba */
+.chip.secret {
+  background: linear-gradient(100deg, #3a7d44, #1f5c2e);
+  border-color: transparent;
+  animation: reveal 0.4s ease;
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora,
+  .btn.pulse {
+    animation: none;
+  }
+  .btn:hover,
+  .chip:hover {
+    transform: none;
+  }
+}

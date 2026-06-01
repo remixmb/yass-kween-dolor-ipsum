@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="yass-kween-dolor-ipsum — a themed placeholder text generator. Lorem ipsum, but make it iconic."
+    />
+    <title>yass-kween-dolor-ipsum 💅 — themed placeholder text</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💅</text></svg>"
+    />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div class="aurora" aria-hidden="true"></div>
+
+    <main class="shell">
+      <header class="hero">
+        <p class="kicker">themed placeholder text generator</p>
+        <h1>yass&#8209;kween<span class="dim">&#8209;dolor&#8209;ipsum</span></h1>
+        <p class="tagline">
+          Lorem ipsum, but make it <em>iconic</em>. Pick a voice, set the dials, and
+          serve perfectly seasoned filler text. 💅
+        </p>
+      </header>
+
+      <section class="panel" aria-label="Generator controls">
+        <div class="themes" id="themes" role="radiogroup" aria-label="Theme">
+          <!-- theme chips injected by main.ts -->
+        </div>
+
+        <div class="controls">
+          <label class="field">
+            <span class="field-label">Unit</span>
+            <select id="unit">
+              <option value="paragraphs">Paragraphs</option>
+              <option value="sentences">Sentences</option>
+              <option value="words">Words</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span class="field-label">Count <output id="countValue">3</output></span>
+            <input id="count" type="range" min="1" max="12" value="3" />
+          </label>
+
+          <label class="field">
+            <span class="field-label">
+              Yassification 💅 <output id="intensityValue">85%</output>
+            </span>
+            <input id="intensity" type="range" min="0" max="100" value="85" />
+          </label>
+
+          <label class="field">
+            <span class="field-label">Seed <small>(optional)</small></span>
+            <input id="seed" type="text" placeholder="leave blank for random" />
+          </label>
+
+          <div class="field toggles">
+            <label class="toggle">
+              <input id="html" type="checkbox" />
+              <span>HTML output</span>
+            </label>
+            <label class="toggle">
+              <input id="lorem" type="checkbox" />
+              <span>Start with “Lorem ipsum”</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="generate" class="btn btn-primary" type="button">
+            ✨ Generate
+          </button>
+          <button id="copy" class="btn" type="button">📋 Copy</button>
+        </div>
+      </section>
+
+      <section class="output-wrap" aria-label="Generated text" aria-live="polite">
+        <div class="output-meta">
+          <span id="outputLabel" class="badge">💅 Yass Kween</span>
+          <span id="outputStats" class="stats"></span>
+        </div>
+        <article id="output" class="output"></article>
+
+        <details id="loreBox" class="lore" hidden>
+          <summary>📜 The obscure origins of this voice</summary>
+          <p id="loreText"></p>
+        </details>
+      </section>
+
+      <footer class="footer">
+        <p>
+          Built as a portfolio piece — zero-dependency TypeScript core, CLI, and this
+          demo.
+          <a
+            href="https://github.com/remixmb/yass-kween-dolor-ipsum"
+            target="_blank"
+            rel="noopener"
+            >View the source &rarr;</a
+          >
+        </p>
+      </footer>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

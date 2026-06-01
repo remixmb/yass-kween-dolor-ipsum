@@ -79,21 +79,29 @@ jobs:
           ok=""
           for i in $(seq 1 8); do
             body="$(curl -fsSL --max-time 25 "$URL" || true)"
+            # The built app loads a hashed JS module; the rendered README does
+            # not. Requiring it distinguishes "the app" from "Pages serving the
+            # README" (which would otherwise share marker words).
             if echo "$body" | grep -q "yass-kween-dolor-ipsum" \
-               && echo "$body" | grep -qi "lorem ipsum"; then
+               && echo "$body" | grep -qiE 'assets/[^"]+\.js'; then
               ok="1"; break
             fi
-            echo "Attempt $i: page not ready yet, retrying in 15s..."
+            echo "Attempt $i: app not ready yet, retrying in 15s..."
             sleep 15
           done
           if [ -z "$ok" ]; then
-            echo "::error::Deployed page did not serve the expected HTML in time."
+            echo "::error::Deployed page is not the built app. If it shows the README, set Settings → Pages → Source to 'GitHub Actions'."
             exit 1
           fi
-          echo "✅ HTML is live and contains the expected markers."
+          echo "✅ The built app HTML is live."
           base="${URL%/}"
+          assets="$(echo "$body" | grep -oE 'assets/[^"]+\.(js|css)' | sort -u)"
+          echo "$assets" | grep -q '\.js$' || {
+            echo "::error::No built JS asset on the page — Pages may be serving the README, not the app."
+            exit 1
+          }
           fail=""
-          for asset in $(echo "$body" | grep -oE 'assets/[^"]+\.(js|css)' | sort -u); do
+          for asset in $assets; do
             code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 25 "$base/$asset")"
             echo "  $asset -> HTTP $code"
             [ "$code" = "200" ] || fail="1"

@@ -8,9 +8,11 @@ import {
   type CSSProperties,
 } from 'react';
 import {
+  generate,
   generateRich,
   blocksToHtml,
   gloss,
+  themeGloss,
   getTheme,
   visibleThemes,
   DEFAULT_THEME_ID,
@@ -20,6 +22,7 @@ import {
   type Token,
   type Unit,
 } from '../src/index.js';
+import { enterCantina, leaveCantina } from './eggAudio';
 
 const VIDEO_URL = 'https://www.youtube.com/watch?v=kL1PDqzqhM4';
 const COUNT_DEFAULTS: Record<Unit, number> = {
@@ -28,9 +31,140 @@ const COUNT_DEFAULTS: Record<Unit, number> = {
   words: 24,
 };
 const COUNT_MAX: Record<Unit, number> = { paragraphs: 12, sentences: 20, words: 120 };
+const UNIT_SHORT: Record<Unit, string> = {
+  paragraphs: 'para',
+  sentences: 'sent',
+  words: 'words',
+};
+
+/* ---------- appearance tweaks (persisted) ---------- */
+type Surface = 'slate' | 'paper' | 'aurora';
+type Face = 'spectral' | 'garamond' | 'newsreader';
+type Density = 'compact' | 'regular' | 'spacious';
+interface Tweaks {
+  surface: Surface;
+  face: Face;
+  density: Density;
+  tint: boolean;
+}
+const DEFAULT_TWEAKS: Tweaks = {
+  surface: 'slate',
+  face: 'spectral',
+  density: 'regular',
+  tint: true,
+};
+const SURFACES: Surface[] = ['slate', 'paper', 'aurora'];
+const FACES: Face[] = ['spectral', 'garamond', 'newsreader'];
+const DENSITIES: Density[] = ['compact', 'regular', 'spacious'];
+
+/* ---------- recent rolls (persisted) ---------- */
+interface Roll {
+  key: string;
+  themeId: string;
+  blend: number;
+  unit: Unit;
+  count: number;
+  seed: string;
+  lorem: boolean;
+}
+const RECENT_KEY = 'li:recent';
+const TWEAKS_KEY = 'li:tweaks';
+const DEV_KEY = 'li:dev';
+const RECENT_MAX = 14;
+
+// Secret seeds (case-insensitive). `jabba` is handled by the library itself
+// (it overrides the theme with Huttese); the rest are demo-only flourishes.
+const PRIDE_SEEDS = /^(pride|rainbow|loveislove|lgbtq\+?|lgbtqia\+?)$/i;
+const CICERO_SEEDS = /^(cicero|ave|finibus)$/i;
+const ANSWER_SEEDS = /^(42|hitchhiker)$/i;
+
+// The Konami code reveals the otherwise-hidden Appearance panel — a developer
+// convenience, not a public control. ↑ ↑ ↓ ↓ ← → ← → B A.
+const KONAMI = [
+  'ArrowUp',
+  'ArrowUp',
+  'ArrowDown',
+  'ArrowDown',
+  'ArrowLeft',
+  'ArrowRight',
+  'ArrowLeft',
+  'ArrowRight',
+  'b',
+  'a',
+];
+
+function rollKey(r: Omit<Roll, 'key'>): string {
+  return [r.themeId, r.blend, r.unit, r.count, r.seed, r.lorem ? 1 : 0].join('|');
+}
+
+function readStore<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+function writeStore(key: string, value: unknown): void {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    /* storage may be unavailable (private mode, quotas) — ignore. */
+  }
+}
+
+function loadTweaks(): Tweaks {
+  const t = readStore<Partial<Tweaks>>(TWEAKS_KEY, {});
+  return {
+    surface:
+      t.surface && SURFACES.includes(t.surface) ? t.surface : DEFAULT_TWEAKS.surface,
+    face: t.face && FACES.includes(t.face) ? t.face : DEFAULT_TWEAKS.face,
+    density:
+      t.density && DENSITIES.includes(t.density) ? t.density : DEFAULT_TWEAKS.density,
+    tint: t.tint !== false,
+  };
+}
+
+function loadRecent(): Roll[] {
+  const raw = readStore<unknown>(RECENT_KEY, []);
+  if (!Array.isArray(raw)) return [];
+  const out: Roll[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== 'object') continue;
+    const v = item as Partial<Roll>;
+    if (typeof v.seed !== 'string' || typeof v.themeId !== 'string') continue;
+    if (!getTheme(v.themeId)) continue;
+    const unit: Unit =
+      v.unit === 'sentences' || v.unit === 'words' ? v.unit : 'paragraphs';
+    const roll: Omit<Roll, 'key'> = {
+      themeId: v.themeId,
+      blend: clampInt(Number(v.blend), 0, 100, 50),
+      unit,
+      count: Math.max(1, Math.floor(Number(v.count)) || 1),
+      seed: v.seed,
+      lorem: Boolean(v.lorem),
+    };
+    out.push({ key: rollKey(roll), ...roll });
+    if (out.length >= RECENT_MAX) break;
+  }
+  return out;
+}
+
+function clampInt(n: number, lo: number, hi: number, fallback: number): number {
+  if (!Number.isFinite(n)) return fallback;
+  return Math.min(hi, Math.max(lo, Math.round(n)));
+}
+
+function cap(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
 
 function randomSeed(): string {
   return Math.random().toString(36).slice(2, 8);
+}
+
+function safeSeed(s: string): string {
+  return s.replace(/[^a-z0-9_-]+/gi, '-').replace(/^-+|-+$/g, '') || 'random';
 }
 
 function blendCaption(theme: Theme, pct: number): string {
@@ -42,16 +176,38 @@ function blendCaption(theme: Theme, pct: number): string {
   return isBlend ? `Full ${theme.name}` : 'Maximal';
 }
 
-/** A Cicero hover tip for a blend token, or null when the word isn't glossed. */
-function tipFor(tok: Token, isBlend: boolean): string | null {
-  if (tok.op || !isBlend || !tok.base) return null;
-  const en = gloss(tok.base);
-  return `📜 ${tok.base}${en ? `  ·  ${en}` : ''}`;
+/** Normalize a rendered token to its dictionary form for display in a tip. */
+function bareWord(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/^[^a-z0-9]+/, '')
+    .replace(/[^a-z0-9]+$/, '');
 }
 
-function renderTokens(tokens: Token[], isBlend: boolean, onTap: (tip: string) => void) {
+/**
+ * A hover tip for a token: the Cicero Latin root + gloss for blend themes, or
+ * the plain-English meaning for a non-blend voice's jargon. `null` when the
+ * word carries no annotation (openers, interjections, unglossed words).
+ */
+function tipFor(tok: Token, theme: Theme, isBlend: boolean): string | null {
+  if (tok.op) return null;
+  if (isBlend) {
+    if (!tok.base) return null;
+    const en = gloss(tok.base);
+    return `📜 ${tok.base}${en ? `  ·  ${en}` : ''}`;
+  }
+  const en = themeGloss(theme, tok.t);
+  return en ? `💡 ${bareWord(tok.t)}  ·  ${en}` : null;
+}
+
+function renderTokens(
+  tokens: Token[],
+  theme: Theme,
+  isBlend: boolean,
+  onTap: (tip: string) => void,
+) {
   return tokens.map((tok, i) => {
-    const tip = tipFor(tok, isBlend);
+    const tip = tipFor(tok, theme, isBlend);
     return (
       <Fragment key={i}>
         {tip ? (
@@ -109,6 +265,58 @@ function initialState(): InitialState {
   };
 }
 
+/** An original, stylized Hutt — no copyrighted artwork, just shapes. */
+function JabbaHutt() {
+  return (
+    <svg className="hutt" viewBox="0 0 220 170" role="img" aria-label="A Hutt awakens">
+      <defs>
+        <radialGradient id="huttBody" cx="44%" cy="32%" r="78%">
+          <stop offset="0%" stopColor="#cdb87a" />
+          <stop offset="55%" stopColor="#9a9a52" />
+          <stop offset="100%" stopColor="#5f6b34" />
+        </radialGradient>
+      </defs>
+      <path
+        className="hutt-body"
+        d="M110 20 C58 20 24 58 24 104 C24 148 64 164 110 164 C156 164 196 148 196 104 C196 58 162 20 110 20 Z"
+        fill="url(#huttBody)"
+        stroke="#3f4a22"
+        strokeWidth="3"
+      />
+      <ellipse cx="110" cy="122" rx="64" ry="34" fill="#c9b988" opacity="0.45" />
+      <g className="hutt-eyes">
+        <ellipse
+          cx="84"
+          cy="74"
+          rx="17"
+          ry="13"
+          fill="#e9d49a"
+          stroke="#3f4a22"
+          strokeWidth="2.5"
+        />
+        <ellipse
+          cx="136"
+          cy="74"
+          rx="17"
+          ry="13"
+          fill="#e9d49a"
+          stroke="#3f4a22"
+          strokeWidth="2.5"
+        />
+        <ellipse cx="84" cy="76" rx="4.5" ry="8" fill="#2a2410" />
+        <ellipse cx="136" cy="76" rx="4.5" ry="8" fill="#2a2410" />
+      </g>
+      <ellipse cx="100" cy="105" rx="5" ry="4" fill="#4a3f22" />
+      <ellipse cx="120" cy="105" rx="5" ry="4" fill="#4a3f22" />
+      <path
+        className="hutt-mouth"
+        d="M68 124 Q110 152 152 124 Q110 140 68 124 Z"
+        fill="#3a2a16"
+      />
+    </svg>
+  );
+}
+
 export function App() {
   const init = useMemo(initialState, []);
   const [themeId, setThemeId] = useState(init.themeId);
@@ -117,16 +325,27 @@ export function App() {
   const [count, setCount] = useState(init.count);
   const [seed, setSeed] = useState(init.seed);
   const [lorem, setLorem] = useState(init.lorem);
-  const [html, setHtml] = useState(init.html);
+  const [view, setView] = useState<'text' | 'html'>(init.html ? 'html' : 'text');
   const [hutteseRevealed, setHutteseRevealed] = useState(init.hutteseRevealed);
+  const [tweaks, setTweaks] = useState<Tweaks>(loadTweaks);
+  const [recent, setRecent] = useState<Roll[]>(loadRecent);
+  const [compareOpen, setCompareOpen] = useState(false);
+  const [devPanel, setDevPanel] = useState(() => readStore<boolean>(DEV_KEY, false));
   const [toast, setToast] = useState('');
   const [eggBurst, setEggBurst] = useState(false);
+  const [prideBurst, setPrideBurst] = useState(false);
   const [genId, setGenId] = useState(0);
 
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const eggTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prideFired = useRef(false);
+  const devRef = useRef(devPanel);
+  const lastRecorded = useRef<string>('');
   const primaryRef = useRef<HTMLButtonElement>(null);
   const shuffleRef = useRef<HTMLButtonElement>(null);
+
+  const html = view === 'html';
+  const pride = PRIDE_SEEDS.test(seed.trim());
 
   const result = useMemo(
     () =>
@@ -142,6 +361,7 @@ export function App() {
   );
   const displayTheme = result.theme;
   const isBlend = result.isBlend;
+  const hasGlossary = Boolean(displayTheme.glossary);
   const plainText = result.text;
   const htmlText = useMemo(() => blocksToHtml(result.blocks), [result]);
   const copyText = html ? htmlText : plainText;
@@ -149,6 +369,41 @@ export function App() {
   const wordCount = plainText.trim().split(/\s+/).filter(Boolean).length;
   const charCount = plainText.length;
   const eggActive = displayTheme.id === EASTER_EGG_THEME_ID;
+
+  const currentKey = rollKey({
+    themeId: displayTheme.id,
+    blend,
+    unit,
+    count,
+    seed,
+    lorem,
+  });
+
+  const chipThemes = useMemo(
+    () =>
+      hutteseRevealed
+        ? [...visibleThemes, getTheme(EASTER_EGG_THEME_ID)!]
+        : [...visibleThemes],
+    [hutteseRevealed],
+  );
+
+  // Compare gallery: one short, same-seed specimen per voice at its natural
+  // blend. Computed only while the gallery is open. Dodge the Jabba override so
+  // every card shows its own voice rather than collapsing to Huttese.
+  const comparePreviews = useMemo(() => {
+    if (!compareOpen) return [];
+    const previewSeed = seed.toLowerCase() === EASTER_EGG_SEED ? `${seed}~` : seed;
+    return chipThemes.map((th) => ({
+      theme: th,
+      text: generate({
+        theme: th.id,
+        units: 'sentences',
+        count: 1,
+        seed: previewSeed,
+        intensity: th.defaultIntensity ?? 0.6,
+      }),
+    }));
+  }, [compareOpen, seed, chipThemes]);
 
   // Reflect state in the URL so every result is shareable.
   useEffect(() => {
@@ -163,15 +418,69 @@ export function App() {
     window.history.replaceState(null, '', `?${p.toString()}`);
   }, [displayTheme, unit, count, blend, seed, html, lorem]);
 
-  // Escape dismisses the Easter-egg overlay.
+  // Persist appearance tweaks and recent rolls.
+  useEffect(() => writeStore(TWEAKS_KEY, tweaks), [tweaks]);
+  useEffect(() => writeStore(RECENT_KEY, recent), [recent]);
+
+  // Record a "roll" once the current result settles, deduped by signature. The
+  // debounce keeps slider drags from flooding history with intermediate values.
   useEffect(() => {
-    if (!eggBurst) return;
+    const id = setTimeout(() => {
+      if (currentKey === lastRecorded.current) return;
+      lastRecorded.current = currentKey;
+      const entry: Roll = {
+        key: currentKey,
+        themeId: displayTheme.id,
+        blend,
+        unit,
+        count,
+        seed,
+        lorem,
+      };
+      setRecent((prev) =>
+        [entry, ...prev.filter((r) => r.key !== currentKey)].slice(0, RECENT_MAX),
+      );
+    }, 700);
+    return () => clearTimeout(id);
+  }, [currentKey, displayTheme.id, blend, unit, count, seed, lorem]);
+
+  // Persist the (secret) developer Appearance panel unlock.
+  useEffect(() => {
+    devRef.current = devPanel;
+    writeStore(DEV_KEY, devPanel);
+  }, [devPanel]);
+
+  // Escape dismisses any open Easter-egg overlay.
+  useEffect(() => {
+    if (!eggBurst && !prideBurst) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setEggBurst(false);
+      if (e.key === 'Escape') {
+        setEggBurst(false);
+        setPrideBurst(false);
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
+  }, [eggBurst, prideBurst]);
+
+  // The cantina audio rides with the Huttese overlay: a live-synthesized 8-bit
+  // loop and Jabba's laugh (no audio files), faded out when it closes.
+  useEffect(() => {
+    if (eggBurst) enterCantina();
+    else leaveCantina();
+    return () => leaveCantina();
   }, [eggBurst]);
+
+  // Fire the Pride celebration once when a pride seed activates it.
+  useEffect(() => {
+    if (pride && !prideFired.current) {
+      prideFired.current = true;
+      setPrideBurst(true);
+      if (prideTimer.current) clearTimeout(prideTimer.current);
+      prideTimer.current = setTimeout(() => setPrideBurst(false), 3600);
+    }
+    if (!pride) prideFired.current = false;
+  }, [pride]);
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
@@ -179,8 +488,32 @@ export function App() {
     toastTimer.current = setTimeout(() => setToast(''), 2300);
   }, []);
 
+  // Konami code (↑ ↑ ↓ ↓ ← → ← → B A) toggles the hidden Appearance panel — a
+  // developer convenience kept out of the public UI.
+  useEffect(() => {
+    const buf: string[] = [];
+    const onKey = (e: KeyboardEvent) => {
+      buf.push(e.key.length === 1 ? e.key.toLowerCase() : e.key);
+      if (buf.length > KONAMI.length) buf.shift();
+      if (buf.length === KONAMI.length && KONAMI.every((k, i) => buf[i] === k)) {
+        buf.length = 0;
+        const next = !devRef.current;
+        devRef.current = next;
+        setDevPanel(next);
+        showToast(next ? '🛠️ Appearance panel unlocked' : '🛠️ Appearance panel hidden');
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [showToast]);
+
   function selectTheme(id: string) {
     const th = getTheme(id);
+    if (th?.hidden) {
+      // Picking the secret Hutt chip replays the cantina, laugh and all.
+      setHutteseRevealed(true);
+      setEggBurst(true);
+    }
     setThemeId(id);
     if (th) setBlend(Math.round((th.defaultIntensity ?? 0.5) * 100));
     setGenId((g) => g + 1);
@@ -188,11 +521,14 @@ export function App() {
 
   function onSeed(v: string) {
     setSeed(v);
-    if (v.trim().toLowerCase() === EASTER_EGG_SEED && !hutteseRevealed) {
+    const s = v.trim().toLowerCase();
+    if (s === EASTER_EGG_SEED && !hutteseRevealed) {
       setHutteseRevealed(true);
       setEggBurst(true);
-      if (eggTimer.current) clearTimeout(eggTimer.current);
-      eggTimer.current = setTimeout(() => setEggBurst(false), 3000);
+    } else if (CICERO_SEEDS.test(s)) {
+      showToast('🏛️ Ave, Cicero. Slide the blend to 0 to read him unblended.');
+    } else if (ANSWER_SEEDS.test(s)) {
+      showToast('📖 42 — the answer to ipsum, the universe, and everything.');
     }
   }
 
@@ -211,6 +547,22 @@ export function App() {
       void s.offsetWidth;
       s.classList.add('spin');
     }
+  }
+
+  function restoreRoll(r: Roll) {
+    if (getTheme(r.themeId)?.hidden) setHutteseRevealed(true);
+    setThemeId(r.themeId);
+    setBlend(r.blend);
+    setUnit(r.unit);
+    setCount(r.count);
+    setSeed(r.seed);
+    setLorem(r.lorem);
+    setGenId((g) => g + 1);
+  }
+
+  function clearRecent() {
+    setRecent([]);
+    lastRecorded.current = currentKey;
   }
 
   async function copy(text: string, msg: string) {
@@ -235,15 +587,57 @@ export function App() {
   function copyLink() {
     copy(location.origin + location.pathname + location.search, 'Link copied 🔗');
   }
+
+  function download(filename: string, mime: string, data: string) {
+    try {
+      const blob = new Blob([data], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      showToast(`Saved ${filename} ⬇`);
+    } catch {
+      showToast('Download failed — copy instead.');
+    }
+  }
+  function exportTxt() {
+    download(
+      `lorem-ipsum-${safeSeed(seed)}.txt`,
+      'text/plain;charset=utf-8',
+      `${plainText}\n`,
+    );
+  }
+  function exportJson() {
+    const payload = {
+      generator: 'yass-kween-dolor-ipsum',
+      theme: displayTheme.id,
+      voice: displayTheme.name,
+      seed,
+      units: unit,
+      count,
+      blend,
+      intensity: blend / 100,
+      startWithLorem: lorem,
+      isBlend,
+      text: plainText,
+      html: htmlText,
+    };
+    download(
+      `lorem-ipsum-${safeSeed(seed)}.json`,
+      'application/json;charset=utf-8',
+      JSON.stringify(payload, null, 2),
+    );
+  }
+
   function changeUnit(v: Unit) {
     setUnit(v);
     setCount(COUNT_DEFAULTS[v]);
     setGenId((g) => g + 1);
   }
-
-  const chipThemes = hutteseRevealed
-    ? [...visibleThemes, getTheme(EASTER_EGG_THEME_ID)!]
-    : visibleThemes;
 
   function onVoicesKey(e: React.KeyboardEvent) {
     const keys = ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'];
@@ -277,10 +671,12 @@ export function App() {
   return (
     <div
       id="app"
-      data-bg="slate"
-      data-type="spectral"
-      data-density="regular"
+      data-bg={tweaks.surface}
+      data-type={tweaks.face}
+      data-density={tweaks.density}
+      data-tint={tweaks.tint ? undefined : 'off'}
       data-egg={eggActive ? '1' : undefined}
+      data-pride={pride ? '1' : undefined}
       style={appStyle}
     >
       <a className="skip" href="#composer">
@@ -448,14 +844,6 @@ export function App() {
                   />
                   <span>Start with &ldquo;Lorem ipsum&rdquo;</span>
                 </label>
-                <label className="toggle">
-                  <input
-                    type="checkbox"
-                    checked={html}
-                    onChange={(e) => setHtml(e.target.checked)}
-                  />
-                  <span>HTML output</span>
-                </label>
               </div>
             </div>
           </div>
@@ -482,11 +870,103 @@ export function App() {
           </div>
         </section>
 
+        {devPanel && (
+          <details className="tweaks">
+            <summary>
+              <span className="tw-gear" aria-hidden="true">
+                &#9881;
+              </span>{' '}
+              Appearance (dev)
+            </summary>
+            <div className="tweak-grid">
+              <div className="tweak-row">
+                <span className="tw-label">Surface</span>
+                <div className="view-seg" role="group" aria-label="Surface">
+                  {SURFACES.map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      className={tweaks.surface === s ? 'on' : ''}
+                      aria-pressed={tweaks.surface === s}
+                      onClick={() => setTweaks((t) => ({ ...t, surface: s }))}
+                    >
+                      {cap(s)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="tweak-row">
+                <span className="tw-label">Reading face</span>
+                <div className="view-seg" role="group" aria-label="Reading face">
+                  {FACES.map((f) => (
+                    <button
+                      key={f}
+                      type="button"
+                      className={tweaks.face === f ? 'on' : ''}
+                      aria-pressed={tweaks.face === f}
+                      onClick={() => setTweaks((t) => ({ ...t, face: f }))}
+                    >
+                      {cap(f)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="tweak-row">
+                <span className="tw-label">Density</span>
+                <div className="view-seg" role="group" aria-label="Density">
+                  {DENSITIES.map((d) => (
+                    <button
+                      key={d}
+                      type="button"
+                      className={tweaks.density === d ? 'on' : ''}
+                      aria-pressed={tweaks.density === d}
+                      onClick={() => setTweaks((t) => ({ ...t, density: d }))}
+                    >
+                      {cap(d)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="tweak-row">
+                <span className="tw-label">Page tint</span>
+                <label className="toggle tw-toggle">
+                  <input
+                    type="checkbox"
+                    checked={tweaks.tint}
+                    onChange={(e) =>
+                      setTweaks((t) => ({ ...t, tint: e.target.checked }))
+                    }
+                  />
+                  <span>{tweaks.tint ? 'Voice color' : 'Neutral'}</span>
+                </label>
+              </div>
+            </div>
+          </details>
+        )}
+
         <section className="specimen" aria-label="Generated text" aria-live="polite">
           <div className="specimen-top">
             <p className="sec-label" style={{ margin: 0 }}>
               <span className="n">04</span> Specimen
             </p>
+            <div className="view-seg" role="group" aria-label="Output format">
+              <button
+                type="button"
+                className={view === 'text' ? 'on' : ''}
+                aria-pressed={view === 'text'}
+                onClick={() => setView('text')}
+              >
+                Text
+              </button>
+              <button
+                type="button"
+                className={view === 'html' ? 'on' : ''}
+                aria-pressed={view === 'html'}
+                onClick={() => setView('html')}
+              >
+                HTML
+              </button>
+            </div>
           </div>
 
           <div className="specimen-head">
@@ -498,14 +978,32 @@ export function App() {
                 {wordCount} words &middot; {charCount} chars &middot; seed &ldquo;
                 {seed}&rdquo;
               </span>
+              <span className="export">
+                <button
+                  type="button"
+                  onClick={exportTxt}
+                  title="Download as plain text"
+                >
+                  .txt
+                </button>
+                <button type="button" onClick={exportJson} title="Download as JSON">
+                  .json
+                </button>
+              </span>
             </span>
           </div>
 
-          {isBlend && !html && (
+          {!html && isBlend && (
             <p className="hint">
               <span className="em">📜</span> Hover or tap an{' '}
               <span className="u">underlined</span> word to reveal Cicero&rsquo;s Latin
               &mdash; and what it means.
+            </p>
+          )}
+          {!html && !isBlend && hasGlossary && (
+            <p className="hint">
+              <span className="em">💡</span> Hover or tap an{' '}
+              <span className="u">underlined</span> word to decode the jargon.
             </p>
           )}
 
@@ -515,7 +1013,7 @@ export function App() {
             <article className="output" key={genId}>
               {result.blocks.map((p, i) => (
                 <p key={i} className={i === 0 ? 'lead' : ''}>
-                  {renderTokens(p, isBlend, (tip) => showToast(tip))}
+                  {renderTokens(p, displayTheme, isBlend, (tip) => showToast(tip))}
                 </p>
               ))}
             </article>
@@ -526,6 +1024,91 @@ export function App() {
               <summary>About this voice</summary>
               <p>{displayTheme.origin}</p>
             </details>
+          )}
+        </section>
+
+        {recent.length > 0 && (
+          <section className="recent" aria-label="Recent rolls">
+            <div className="recent-head">
+              <p className="sec-label" style={{ margin: 0 }}>
+                <span className="n">05</span> Recent rolls
+              </p>
+              <button type="button" className="recent-clear" onClick={clearRecent}>
+                Clear
+              </button>
+            </div>
+            <div className="recent-strip">
+              {recent.map((r) => {
+                const th = getTheme(r.themeId)!;
+                const on = r.key === currentKey;
+                return (
+                  <button
+                    key={r.key}
+                    type="button"
+                    className={'recent-item' + (on ? ' on' : '')}
+                    style={{ '--voice': th.accent } as CSSProperties}
+                    onClick={() => restoreRoll(r)}
+                    aria-current={on ? 'true' : undefined}
+                    title={`${th.name} · ${r.blend}° · ${r.count} ${r.unit} · seed "${r.seed}"`}
+                  >
+                    <span className="em">{th.emoji}</span>
+                    <span className="ri-body">
+                      <span className="ri-seed">{r.seed}</span>
+                      <span className="ri-meta">
+                        {th.name} &middot; {r.blend}&deg; &middot; {r.count}{' '}
+                        {UNIT_SHORT[r.unit]}
+                      </span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        <section className="compare" aria-label="Compare voices">
+          <div className="specimen-top">
+            <p className="sec-label" style={{ margin: 0 }}>
+              <span className="n">06</span> Compare
+            </p>
+            <button
+              type="button"
+              className="btn-ghost"
+              aria-expanded={compareOpen}
+              onClick={() => setCompareOpen((o) => !o)}
+            >
+              {compareOpen ? 'Hide gallery' : 'Compare all voices'}
+            </button>
+          </div>
+          {compareOpen && (
+            <>
+              <p className="hint">
+                <span className="em">🎛️</span> Same seed &ldquo;{seed}&rdquo;, each
+                voice at its natural blend. Click a card to switch the specimen to that
+                voice.
+              </p>
+              <div className="cmp-grid">
+                {comparePreviews.map(({ theme: th, text }) => (
+                  <button
+                    key={th.id}
+                    type="button"
+                    className={
+                      'cmp-card' + (th.id === displayTheme.id ? ' active' : '')
+                    }
+                    style={{ '--voice': th.accent } as CSSProperties}
+                    onClick={() => selectTheme(th.id)}
+                  >
+                    <span className="cmp-head">
+                      <span className="em">{th.emoji}</span> {th.name}
+                    </span>
+                    <span className="cmp-body">{text}</span>
+                    <span className="cmp-pick">
+                      {th.id === displayTheme.id ? 'Current voice' : 'Use this voice →'}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </>
           )}
         </section>
 
@@ -560,11 +1143,33 @@ export function App() {
           <div className="egg-suns" aria-hidden="true" />
           <div className="egg-inner">
             <div className="egg-laugh">Ho ho ho ho&hellip;</div>
+            <JabbaHutt />
             <div className="egg-title">BO SHUDA</div>
             <div className="egg-sub">
               A wild Hutt awakens. Cicero&rsquo;s Latin, <em>huttese&rsquo;d.</em>
             </div>
-            <div className="egg-skip">tap to enter the cantina</div>
+            <div className="egg-trans">
+              &laquo; bo shuda &raquo; &mdash; <span>back off, lesser being</span>
+            </div>
+            <div className="egg-skip">
+              &#128266; live-synth cantina &middot; tap to enter
+            </div>
+          </div>
+        </div>
+      )}
+
+      {prideBurst && (
+        <div
+          className="pride-burst"
+          onClick={() => setPrideBurst(false)}
+          role="presentation"
+        >
+          <div className="pride-flag" aria-hidden="true" />
+          <div className="pride-inner">
+            <div className="pride-emoji">🏳️‍🌈</div>
+            <div className="pride-title">LOVE IS LOVE</div>
+            <div className="pride-sub">Lorem ipsum, in full color. Happy Pride. 🌈</div>
+            <div className="egg-skip">tap to continue</div>
           </div>
         </div>
       )}

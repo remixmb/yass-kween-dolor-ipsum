@@ -12,6 +12,23 @@ export const hoa: Theme = {
     'The passive-aggressive officialese of the Homeowners Association — where your ' +
     'mailbox is the wrong beige and the garden gnome is, regrettably, in ' +
     'violation. Per the bylaws.',
+  glossary: {
+    bylaws: "the association's internal rules",
+    covenant: 'a binding rule that runs with your property',
+    violation: 'breaking a rule',
+    compliance: 'following the rules',
+    regulation: 'an official rule',
+    palette: 'the list of approved colors ("color palette")',
+    ordinance: 'a local law',
+    easement: "another party's right to cross your land",
+    setback: 'required distance from the property line',
+    assessment: 'a fee charged to owners',
+    dues: 'mandatory membership fees',
+    quorum: 'the minimum members needed to vote',
+    seconded: 'a motion supported by a second member',
+    restriction: 'a limit on what you may do',
+    permit: 'official permission to do something',
+  },
   words: [
     'bylaws',
     'covenant',

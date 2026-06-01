@@ -90,6 +90,30 @@ export function listThemeIds(): string[] {
   return themes.map((t) => t.id);
 }
 
+/**
+ * Normalize a rendered word to a glossary key: lowercase, with leading and
+ * trailing punctuation stripped (internal hyphens and apostrophes are kept). So
+ * `"Synergy,"` → `"synergy"` and `"low-hanging"` stays `"low-hanging"`.
+ */
+function glossKey(word: string): string {
+  return String(word)
+    .toLowerCase()
+    .replace(/^[^a-z0-9]+/, '')
+    .replace(/[^a-z0-9]+$/, '');
+}
+
+/**
+ * Look up a plain-language gloss for a word within a non-blend theme's own
+ * {@link Theme.glossary}. Matches case-insensitively and ignores surrounding
+ * punctuation, so the rendered token `"Synergy,"` resolves to `"synergy"`.
+ * Returns `''` when the theme has no glossary or the word isn't listed.
+ */
+export function themeGloss(theme: Theme, word: string): string {
+  const glossary = theme.glossary;
+  if (!glossary) return '';
+  return glossary[glossKey(word)] ?? '';
+}
+
 export {
   classic,
   yasskween,

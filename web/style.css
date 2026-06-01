@@ -179,6 +179,18 @@ body {
   filter: blur(30px);
 }
 
+/* ---------- page-tint tweak ----------
+   "Page tint: Neutral" calms the ambient voice morph — the accent settles to
+   neutral ink and the colored aura fades — while chips, the dial, and the
+   active selection keep their voice color. Placed after the surface blocks so
+   it wins on source order. */
+#app[data-tint='off'] {
+  --accent: var(--ink-soft);
+}
+#app[data-tint='off'] .aura {
+  opacity: 0;
+}
+
 /* ---------- typeface tweak ---------- */
 #app[data-type='garamond'] {
   --serif: 'EB Garamond', Georgia, serif;
@@ -1103,9 +1115,8 @@ select:focus,
   background: radial-gradient(120% 120% at 50% 40%, #2a2410 0%, #0a0d06 60%, #000 100%);
   overflow: hidden;
   cursor: pointer;
-  animation:
-    eggIn 0.5s ease both,
-    eggOut 0.6s ease 2.4s both;
+  /* Stays up until tapped/Escape so the cantina loop can play underneath. */
+  animation: eggIn 0.5s ease both;
 }
 .egg-burst .egg-suns {
   position: absolute;
@@ -1248,6 +1259,164 @@ select:focus,
     0 0 22px -2px var(--voice);
 }
 
+/* ---------- the Hutt (egg overlay) ---------- */
+.hutt {
+  width: clamp(150px, 33vw, 230px);
+  height: auto;
+  display: block;
+  margin: 0.25em auto 0.15em;
+  filter: drop-shadow(0 18px 26px rgba(0, 0, 0, 0.5));
+  transform-origin: 50% 100%;
+  animation:
+    huttRise 0.8s cubic-bezier(0.2, 0.9, 0.3, 1.2) 0.1s both,
+    huttJiggle 0.5s ease-in-out 0.95s 4;
+}
+.hutt-mouth {
+  transform-box: fill-box;
+  transform-origin: 50% 28%;
+  animation: huttMouth 0.5s ease-in-out 0.95s 4;
+}
+@keyframes huttRise {
+  from {
+    opacity: 0;
+    transform: translateY(46px) scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes huttJiggle {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+  25% {
+    transform: translateY(3px) rotate(-1.2deg);
+  }
+  75% {
+    transform: translateY(-2px) rotate(1.2deg);
+  }
+}
+@keyframes huttMouth {
+  0%,
+  100% {
+    transform: scaleY(0.6);
+  }
+  50% {
+    transform: scaleY(1.3);
+  }
+}
+
+/* ---------- Pride easter egg ---------- */
+#app[data-pride] .aura {
+  background: conic-gradient(
+    from 90deg,
+    #e40303,
+    #ff8c00,
+    #ffed00,
+    #008026,
+    #004dff,
+    #750787,
+    #e40303
+  );
+  opacity: 0.55;
+  mix-blend-mode: screen;
+  filter: blur(55px) saturate(1.35);
+}
+#app[data-pride] .wordmark {
+  background: linear-gradient(
+    92deg,
+    #e40303,
+    #ff8c00 18%,
+    #ffed00 36%,
+    #2bb673 54%,
+    #2f6cf4 72%,
+    #8a2be2 92%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.pride-burst {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(
+    120% 120% at 50% 40%,
+    rgba(22, 18, 32, 0.92),
+    rgba(0, 0, 0, 0.96)
+  );
+  overflow: hidden;
+  cursor: pointer;
+  animation: eggIn 0.5s ease both;
+}
+.pride-flag {
+  position: absolute;
+  inset: -12%;
+  background: linear-gradient(
+    180deg,
+    #e40303 0 16.66%,
+    #ff8c00 16.66% 33.33%,
+    #ffed00 33.33% 50%,
+    #008026 50% 66.66%,
+    #004dff 66.66% 83.33%,
+    #750787 83.33% 100%
+  );
+  opacity: 0.22;
+  filter: blur(2px);
+  animation: prideWave 4s ease-in-out infinite alternate;
+}
+@keyframes prideWave {
+  from {
+    transform: skewY(-2deg) scale(1.06);
+  }
+  to {
+    transform: skewY(2deg) scale(1.12);
+  }
+}
+.pride-inner {
+  position: relative;
+  text-align: center;
+  color: #fff;
+  padding: 24px;
+  animation: eggPop 0.7s cubic-bezier(0.2, 0.9, 0.3, 1.2) 0.1s both;
+}
+.pride-emoji {
+  font-size: clamp(3rem, 14vw, 7rem);
+  line-height: 1;
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.5));
+}
+.pride-title {
+  font-family: var(--serif);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  font-size: clamp(2.2rem, 11vw, 6rem);
+  line-height: 0.95;
+  margin-top: 0.08em;
+  background: linear-gradient(
+    92deg,
+    #e40303,
+    #ff8c00,
+    #ffed00,
+    #2bb673,
+    #2f6cf4,
+    #a855f7
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 40px rgba(255, 255, 255, 0.25);
+}
+.pride-sub {
+  font-family: var(--sans);
+  font-size: clamp(0.9rem, 2.6vw, 1.15rem);
+  color: #e8e8f0;
+  margin-top: 0.8em;
+}
+
 /* ---------- skip link ---------- */
 .skip {
   position: fixed;
@@ -1365,7 +1534,119 @@ select:focus,
   color: var(--ink-faint);
 }
 
+/* ---------- appearance tweaks panel ---------- */
+.tweaks {
+  margin: 0 0 calc(30px * var(--u));
+}
+.tweaks > summary {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--sans);
+  font-size: calc(0.8rem * var(--fs));
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+  list-style: none;
+  padding: 6px 2px;
+}
+.tweaks > summary::-webkit-details-marker {
+  display: none;
+}
+.tweaks > summary::after {
+  content: '\25BE';
+  color: var(--ink-faint);
+  transition: transform 0.2s ease;
+}
+.tweaks[open] > summary::after {
+  transform: rotate(180deg);
+}
+.tweaks .tw-gear {
+  color: var(--accent);
+  transition: color 0.6s ease;
+}
+.tweak-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: calc(15px * var(--u)) calc(22px * var(--u));
+  margin-top: calc(12px * var(--u));
+  padding: clamp(15px, 2.4vw, 20px);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+.tweak-row {
+  display: flex;
+  flex-direction: column;
+  gap: calc(8px * var(--u));
+}
+.tw-label {
+  font-family: var(--sans);
+  font-size: calc(0.72rem * var(--fs));
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-faint);
+}
+.tweak-row .view-seg {
+  width: fit-content;
+  max-width: 100%;
+  flex-wrap: wrap;
+}
+.tw-toggle {
+  margin-top: 2px;
+}
+
+/* ---------- ghost button (compare toggle) ---------- */
+.btn-ghost {
+  font-family: var(--sans);
+  font-size: calc(0.8rem * var(--fs));
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: calc(7px * var(--u)) 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    border-color 0.2s ease,
+    transform 0.12s ease,
+    color 0.6s ease;
+}
+.btn-ghost:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in oklab, var(--accent) 40%, var(--line));
+}
+
+/* compare + recent sections share the specimen rhythm */
+.compare,
+.recent {
+  margin-top: calc(30px * var(--u));
+}
+.compare .cmp-grid {
+  margin-top: calc(4px * var(--u));
+}
+
+/* ---------- Easter-egg translation beat ---------- */
+.egg-trans {
+  font-family: var(--mono);
+  font-size: clamp(0.7rem, 2.2vw, 0.92rem);
+  color: #d8c089;
+  margin-top: 1em;
+  letter-spacing: 0.03em;
+  animation: eggLaugh 2.8s ease both;
+}
+.egg-trans span {
+  color: #b7c24a;
+}
+
 /* focus visibility */
+.btn-ghost:focus-visible,
+.tweaks > summary:focus-visible,
 .chip:focus-visible,
 .btn:focus-visible,
 .icon-btn:focus-visible,
@@ -1393,6 +1674,10 @@ summary:focus-visible,
   .egg-suns,
   .egg-inner,
   .egg-laugh,
+  .hutt,
+  .hutt-mouth,
+  .pride-flag,
+  .pride-inner,
   #app[data-egg] .wordmark .amp {
     animation-duration: 0.01ms;
     animation-iteration-count: 1;

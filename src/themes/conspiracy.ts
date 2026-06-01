@@ -11,6 +11,23 @@ export const conspiracy: Theme = {
   origin:
     'The breathless red-string-and-corkboard register where every coincidence is ' +
     'a clue and the truth is always [REDACTED]. Follow the money.',
+  glossary: {
+    sheeple: 'people who allegedly follow along without questioning',
+    deep: 'a hidden, permanent power behind the government ("deep state")',
+    state: 'the alleged shadow government',
+    false: 'a staged event blamed on someone else ("false flag")',
+    flag: 'the staged-attack ploy',
+    chemtrails: 'the myth that aircraft contrails are secret chemicals',
+    fluoride: 'a tap-water additive, and a favorite bogeyman',
+    illuminati: 'a mythical secret order said to rule the world',
+    psyop: 'a psychological operation meant to manipulate',
+    narrative: 'the "official story" you are urged to distrust',
+    redacted: 'blacked out; hidden from view',
+    roswell: 'the 1947 New Mexico site of an alleged UFO crash',
+    whistleblower: 'an insider who leaks the supposed truth',
+    matrix: 'the idea that reality itself is a constructed illusion',
+    simulation: 'the theory that we live inside a computer program',
+  },
   words: [
     'wake',
     'up',

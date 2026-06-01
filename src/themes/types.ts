@@ -51,6 +51,15 @@ export interface Theme {
    */
   blendBase?: readonly string[];
   /**
+   * Optional plain-language glossary for a *non-blend* voice — a map from a
+   * vocabulary word (lowercase) to a short, human meaning. The web demo uses it
+   * to decode jargon on hover, the same way blend themes reveal their Latin
+   * root: hover "synergy" and learn what it actually means. Keys are matched
+   * case-insensitively and ignore surrounding punctuation. Blend themes do not
+   * need this — their roots are glossed via {@link gloss}.
+   */
+  glossary?: Readonly<Record<string, string>>;
+  /**
    * Optional note describing the theme's origin or backstory, surfaced by the
    * CLI (`--lore`) and the web demo.
    */

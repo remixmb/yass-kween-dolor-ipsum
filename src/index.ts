@@ -26,6 +26,7 @@ export {
   visibleThemes,
   getTheme,
   listThemeIds,
+  themeGloss,
   DEFAULT_THEME_ID,
   EASTER_EGG_SEED,
   EASTER_EGG_THEME_ID,

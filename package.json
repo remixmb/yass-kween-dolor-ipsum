@@ -14,7 +14,10 @@
     "dummy-text",
     "generator",
     "cli",
-    "typescript"
+    "typescript",
+    "mcp",
+    "model-context-protocol",
+    "ai"
   ],
   "homepage": "https://github.com/remixmb/yass-kween-dolor-ipsum#readme",
   "repository": {
@@ -38,7 +41,8 @@
     }
   },
   "bin": {
-    "yass-ipsum": "./dist/cli.js"
+    "yass-ipsum": "./dist/cli.js",
+    "yass-ipsum-mcp": "./dist/mcp.js"
   },
   "files": [
     "dist",

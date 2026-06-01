@@ -6,6 +6,7 @@ export const zen: Theme = {
   name: 'Zen Garden',
   description: 'Calm, mindful filler. Breathe in placeholder, breathe out copy.',
   emoji: '🍃',
+  accent: '#4f8f6e',
   words: [
     'breathe',
     'stillness',

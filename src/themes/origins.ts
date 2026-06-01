@@ -89,3 +89,81 @@ export const LOREM_ORIGIN_STORY =
   'in 45 BC — a treatise on pleasure and pain. The familiar ' +
   '"dolorem ipsum" means "pain itself". Dial the yassification down and ' +
   'these ancient roots resurface; dial it up and it is pure glam.';
+
+/**
+ * English glosses for Cicero's source words — so hovering a blended word can
+ * reveal not just the Latin root but what it means. From *de Finibus*
+ * 1.10.32–33.
+ */
+export const LATIN_GLOSS: Readonly<Record<string, string>> = {
+  neque: 'nor',
+  porro: 'furthermore',
+  quisquam: 'anyone',
+  est: 'is',
+  qui: 'who',
+  dolorem: 'pain',
+  ipsum: 'itself',
+  quia: 'because',
+  dolor: 'pain',
+  sit: 'let it be',
+  amet: 'loves',
+  consectetur: 'pursues',
+  adipisci: 'to attain',
+  velit: 'wishes',
+  sed: 'but',
+  non: 'not',
+  numquam: 'never',
+  eius: 'of it',
+  modi: 'of a kind',
+  tempora: 'times',
+  incidunt: 'befall',
+  labore: 'by toil',
+  dolore: 'by pain',
+  magnam: 'great',
+  aliquam: 'some',
+  quaerat: 'seeks',
+  voluptatem: 'pleasure',
+  enim: 'indeed',
+  ad: 'toward',
+  minima: 'least',
+  veniam: 'I may come',
+  nostrum: 'our',
+  exercitationem: 'exertion',
+  ullam: 'any',
+  corporis: 'of the body',
+  suscipit: 'undertakes',
+  laboriosam: 'laborious',
+  nisi: 'unless',
+  aliquid: 'anything',
+  ex: 'out of',
+  ea: 'that',
+  commodi: 'advantage',
+  consequatur: 'would follow',
+  vero: 'but truly',
+  eos: 'them',
+  accusamus: 'we accuse',
+  iusto: 'rightful',
+  odio: 'with hatred',
+  dignissimos: 'most worthy',
+  ducimus: 'we deem',
+  blanditiis: 'by flatteries',
+  praesentium: 'of present things',
+  voluptatum: 'of pleasures',
+  deleniti: 'charmed',
+  atque: 'and also',
+  corrupti: 'corrupted',
+  quos: 'whom',
+  dolores: 'sorrows',
+  quas: 'which',
+  molestias: 'annoyances',
+  excepturi: 'to take exception',
+  sint: 'may be',
+  occaecati: 'blinded',
+  cupiditate: 'by desire',
+  provident: 'they foresee',
+};
+
+/** Look up the English gloss for a Cicero source word (or `''` if unknown). */
+export function gloss(word: string): string {
+  return LATIN_GLOSS[String(word).toLowerCase()] ?? '';
+}

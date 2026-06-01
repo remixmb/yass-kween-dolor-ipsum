@@ -6,6 +6,16 @@ import { pirate } from './pirate.js';
 import { hacker } from './hacker.js';
 import { startup } from './startup.js';
 import { zen } from './zen.js';
+import { legalese } from './legalese.js';
+import { cat } from './cat.js';
+import { academia } from './academia.js';
+import { genz } from './genz.js';
+import { boomer } from './boomer.js';
+import { conspiracy } from './conspiracy.js';
+import { dutch } from './dutch.js';
+import { artist } from './artist.js';
+import { barista } from './barista.js';
+import { hoa } from './hoa.js';
 import { huttese } from './huttese.js';
 
 export type { Theme } from './types.js';
@@ -28,6 +38,16 @@ export const themes: readonly Theme[] = [
   hacker,
   startup,
   zen,
+  legalese,
+  cat,
+  academia,
+  genz,
+  boomer,
+  conspiracy,
+  dutch,
+  artist,
+  barista,
+  hoa,
   huttese,
 ];
 
@@ -43,6 +63,16 @@ export type ThemeId =
   | 'hacker'
   | 'startup'
   | 'zen'
+  | 'legalese'
+  | 'cat'
+  | 'academia'
+  | 'genz'
+  | 'boomer'
+  | 'conspiracy'
+  | 'dutch'
+  | 'artist'
+  | 'barista'
+  | 'hoa'
   | 'huttese';
 
 /** The default theme id used when none is specified. */
@@ -60,4 +90,47 @@ export function listThemeIds(): string[] {
   return themes.map((t) => t.id);
 }
 
-export { classic, yasskween, corporate, pirate, hacker, startup, zen, huttese };
+/**
+ * Normalize a rendered word to a glossary key: lowercase, with leading and
+ * trailing punctuation stripped (internal hyphens and apostrophes are kept). So
+ * `"Synergy,"` → `"synergy"` and `"low-hanging"` stays `"low-hanging"`.
+ */
+function glossKey(word: string): string {
+  return String(word)
+    .toLowerCase()
+    .replace(/^[^a-z0-9]+/, '')
+    .replace(/[^a-z0-9]+$/, '');
+}
+
+/**
+ * Look up a plain-language gloss for a word within a non-blend theme's own
+ * {@link Theme.glossary}. Matches case-insensitively and ignores surrounding
+ * punctuation, so the rendered token `"Synergy,"` resolves to `"synergy"`.
+ * Returns `''` when the theme has no glossary or the word isn't listed.
+ */
+export function themeGloss(theme: Theme, word: string): string {
+  const glossary = theme.glossary;
+  if (!glossary) return '';
+  return glossary[glossKey(word)] ?? '';
+}
+
+export {
+  classic,
+  yasskween,
+  corporate,
+  pirate,
+  hacker,
+  startup,
+  zen,
+  legalese,
+  cat,
+  academia,
+  genz,
+  boomer,
+  conspiracy,
+  dutch,
+  artist,
+  barista,
+  hoa,
+  huttese,
+};

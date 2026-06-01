@@ -5,164 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="yass-kween-dolor-ipsum — a themed placeholder text generator. Lorem ipsum, but make it iconic."
+      content="Lorem & Ipsum — a themed placeholder-text generator built on the genuine Latin origins of lorem ipsum. Blend Cicero with seventeen voices."
     />
-    <title>yass-kween-dolor-ipsum 💅 — themed placeholder text</title>
+    <!-- stable marker for the deploy smoke test -->
+    <meta name="generator" content="yass-kween-dolor-ipsum" />
+    <title>Lorem &amp; Ipsum — themed placeholder text 📜</title>
     <link
       rel="icon"
-      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💅</text></svg>"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='84'>📜</text></svg>"
     />
-    <link rel="stylesheet" href="./style.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,600;0,700;0,800;1,300;1,400&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Newsreader:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
-    <div class="aurora" aria-hidden="true"></div>
-
-    <main class="shell">
-      <header class="hero">
-        <p class="kicker">themed placeholder text generator</p>
-        <h1>yass&#8209;kween<span class="dim">&#8209;dolor&#8209;ipsum</span></h1>
-        <p class="tagline">
-          Lorem ipsum, but make it <em>iconic</em>. Pick a voice, slide between ancient
-          Latin and full glam, and serve perfectly seasoned filler text. 💅
-        </p>
-      </header>
-
-      <!-- Inspiration callout: prominent and open by default. -->
-      <aside class="inspiration" aria-labelledby="inspoTitle">
-        <div class="inspiration-icon" aria-hidden="true">💡</div>
-        <div class="inspiration-body">
-          <h2 id="inspoTitle">The mystery behind “lorem ipsum”</h2>
-          <p>
-            It isn’t random gibberish. Lorem ipsum is scrambled Latin from Cicero’s
-            <em>de Finibus Bonorum et Malorum</em> (45 BC) — a treatise on pleasure and
-            pain, where <em>dolorem ipsum</em> means “pain itself.” This whole toy is
-            built on that genuine source: slide the blend toward
-            <strong>Latin</strong> and Cicero resurfaces.
-          </p>
-          <a
-            id="inspoVideo"
-            class="inspiration-cta"
-            href="#"
-            target="_blank"
-            rel="noopener"
-          >
-            ▶ Watch: the mystery of lorem ipsum’s origins
-          </a>
-        </div>
-      </aside>
-
-      <section class="panel" aria-label="Generator controls">
-        <!-- Voice -->
-        <div class="group">
-          <p class="group-label" id="themeLabel">Voice</p>
-          <div
-            class="themes"
-            id="themes"
-            role="radiogroup"
-            aria-labelledby="themeLabel"
-          >
-            <!-- theme chips injected by main.ts -->
-          </div>
-        </div>
-
-        <!-- Blend: Latin ↔ Voice -->
-        <div class="group">
-          <div class="group-head">
-            <p class="group-label">Blend</p>
-            <output id="blendValue" class="group-value" for="intensity"
-              >An even blend</output
-            >
-          </div>
-          <input
-            id="intensity"
-            class="temp"
-            type="range"
-            min="0"
-            max="100"
-            value="85"
-            aria-label="Blend from Latin to the chosen voice"
-            aria-describedby="blendEnds"
-          />
-          <div class="scale-ends" id="blendEnds">
-            <span id="endLo">📜 Latin</span>
-            <span id="endHi">💅 Yass Kween</span>
-          </div>
-        </div>
-
-        <!-- Shape -->
-        <div class="group">
-          <p class="group-label">Shape</p>
-          <div class="controls">
-            <label class="field">
-              <span class="field-label">Amount of</span>
-              <select id="unit" aria-label="Unit to generate">
-                <option value="paragraphs">Paragraphs</option>
-                <option value="sentences">Sentences</option>
-                <option value="words">Words</option>
-              </select>
-            </label>
-
-            <label class="field">
-              <span class="field-label">Count <output id="countValue">3</output></span>
-              <input id="count" type="range" min="1" max="12" value="3" />
-            </label>
-
-            <label class="field">
-              <span class="field-label"
-                >Seed <small>(editable · shareable)</small></span
-              >
-              <input id="seed" type="text" placeholder="random" autocomplete="off" />
-            </label>
-
-            <div class="field toggles">
-              <label class="toggle">
-                <input id="lorem" type="checkbox" />
-                <span>Start with “Lorem ipsum”</span>
-              </label>
-              <label class="toggle">
-                <input id="html" type="checkbox" />
-                <span>HTML output</span>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <div class="actions">
-          <button id="shuffle" class="btn btn-primary" type="button">🎲 Shuffle</button>
-          <button id="copy" class="btn" type="button">📋 Copy text</button>
-          <button id="link" class="btn" type="button">🔗 Copy link</button>
-        </div>
-      </section>
-
-      <section class="output-wrap" aria-label="Generated text" aria-live="polite">
-        <div class="output-meta">
-          <span id="outputLabel" class="badge">💅 Yass Kween</span>
-          <span id="outputStats" class="stats"></span>
-        </div>
-        <article id="output" class="output"></article>
-
-        <details id="loreBox" class="lore" hidden>
-          <summary>📜 More about this voice</summary>
-          <p id="loreText"></p>
-        </details>
-      </section>
-
-      <footer class="footer">
-        <p>
-          Built as a portfolio piece — zero-dependency TypeScript core, CLI, and this
-          demo.
-          <a
-            href="https://github.com/remixmb/yass-kween-dolor-ipsum"
-            target="_blank"
-            rel="noopener"
-            >View the source &rarr;</a
-          >
-        </p>
-      </footer>
-    </main>
-
-    <div id="toast" class="toast" role="status" aria-live="polite"></div>
-
-    <script type="module" src="./main.ts"></script>
+    <div id="root"></div>
+    <script type="module" src="./main.tsx"></script>
   </body>
 </html>

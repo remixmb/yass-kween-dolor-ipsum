@@ -6,6 +6,7 @@ export const classic: Theme = {
   name: 'Classic Lorem',
   description: 'The timeless Latin-flavored filler everyone knows.',
   emoji: '📜',
+  accent: '#9a7b3f',
   defaultIntensity: 0,
   words: [
     'lorem',

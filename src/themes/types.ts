@@ -15,6 +15,12 @@ export interface Theme {
   /** An emoji used as a visual marker in the UI/CLI. */
   emoji: string;
   /**
+   * Accent color (hex) for this voice. The web demo uses it to recolor the
+   * whole page as the blend dial climbs toward the voice. Optional; defaults
+   * are handled by the UI.
+   */
+  accent?: string;
+  /**
    * When `true`, the theme is omitted from public listings (the CLI `--list`
    * and the web demo's chips). It remains fully usable when requested by id —
    * handy for Easter eggs. The Huttese theme is hidden until you summon Jabba.
@@ -44,6 +50,15 @@ export interface Theme {
    * raw Latin shows through; as the dial climbs, the voice takes over.
    */
   blendBase?: readonly string[];
+  /**
+   * Optional plain-language glossary for a *non-blend* voice — a map from a
+   * vocabulary word (lowercase) to a short, human meaning. The web demo uses it
+   * to decode jargon on hover, the same way blend themes reveal their Latin
+   * root: hover "synergy" and learn what it actually means. Keys are matched
+   * case-insensitively and ignore surrounding punctuation. Blend themes do not
+   * need this — their roots are glossed via {@link gloss}.
+   */
+  glossary?: Readonly<Record<string, string>>;
   /**
    * Optional note describing the theme's origin or backstory, surfaced by the
    * CLI (`--lore`) and the web demo.

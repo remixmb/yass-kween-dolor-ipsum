@@ -106,6 +106,7 @@ export const yasskween: Theme = {
   name: 'Yass Kween',
   description: 'Yassified Latin — Cicero, but make it iconic. The house voice.',
   emoji: '💅',
+  accent: '#e6178b',
   defaultIntensity: 0.85,
   origin: LOREM_ORIGIN_STORY,
   // The genuine Latin source of lorem ipsum is the canvas; yassify paints on it.

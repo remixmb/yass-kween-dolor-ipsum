@@ -6,6 +6,7 @@ export const pirate: Theme = {
   name: 'Pirate Shanty',
   description: 'Salty seafaring filler for landlubbers who need dummy text. Arr.',
   emoji: '🏴‍☠️',
+  accent: '#0f7a82',
   words: [
     'ahoy',
     'matey',

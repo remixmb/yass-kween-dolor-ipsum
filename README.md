@@ -244,6 +244,7 @@ It does more than copy-paste:
 - **Per-word hover** — reveal Cicero's Latin under blended voices (`📜`) or decode the jargon in the plain-spoken ones (`💡`).
 - **Text / HTML** toggle, with HTML safely escaped.
 - **Keyboard-quick** — press <kbd>C</kbd> to copy, <kbd>S</kbd> to shuffle; fully responsive from phone to desktop.
+- **Installable & offline** — it's a PWA. Add it to your home screen or desktop and it keeps working with no connection — handy filler, always one tap away.
 
 Every result is **reproducible and shareable** — the seed is always shown and
 editable, **🎲 Shuffle** rolls a new one, and **🔗 Copy link** yields a

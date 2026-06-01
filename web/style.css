@@ -887,6 +887,26 @@ select:focus,
 .footer a:hover {
   text-decoration: underline;
 }
+.install-btn {
+  font-family: var(--sans);
+  font-size: calc(0.8rem * var(--fs));
+  font-weight: 600;
+  color: var(--on-voice);
+  background: var(--voice);
+  border: 1px solid transparent;
+  border-radius: 9px;
+  padding: 7px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 8px 22px -12px var(--voice);
+  transition:
+    transform 0.12s ease,
+    background-color 0.6s ease,
+    box-shadow 0.6s ease;
+}
+.install-btn:hover {
+  transform: translateY(-1px);
+}
 
 /* ---------- toast ---------- */
 .toast {
@@ -1669,6 +1689,7 @@ select:focus,
 
 /* focus visibility */
 .btn-ghost:focus-visible,
+.install-btn:focus-visible,
 .tweaks > summary:focus-visible,
 .chip:focus-visible,
 .btn:focus-visible,

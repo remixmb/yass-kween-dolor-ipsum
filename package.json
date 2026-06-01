@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "A themed placeholder-text generator. Lorem ipsum, but make it iconic — sassy, corporate, pirate, hacker, and more.",
   "type": "module",
+  "sideEffects": false,
   "license": "MIT",
   "author": "Remi M.",
   "keywords": [

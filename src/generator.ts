@@ -40,14 +40,17 @@ export interface GenerateOptions {
    */
   startWithLorem?: boolean;
   /**
-   * How "extra" the output is, in the range `[0, 1]` (values outside are
-   * clamped). Turn it **down** to lessen the yassification — sentences get
-   * calmer, openers and interjections grow rare, and themes with origin roots
-   * (like Yass Kween's genuine Latin) resurface. Turn it **up** to intensify:
-   * more flair, more punctuation, and the theme's stylizer goes all-in.
-   * Defaults to the theme's natural intensity.
+   * The "temperature" of the blend, in the range `[0, 1]` (values outside are
+   * clamped). Think cold → hot: turn it **down** and the output runs _cold_ —
+   * calm, with the raw Latin showing through. Turn it **up** and it runs _hot_
+   * — more flair and punctuation, and the theme's stylizer goes all-in (full
+   * yassified / huttese'd Latin). Defaults to the theme's natural temperature.
+   *
+   * `temperature` is the friendly alias; both map to the same dial.
    */
   intensity?: number;
+  /** Alias for {@link GenerateOptions.intensity} — the temperature dial (0–1). */
+  temperature?: number;
   /** Minimum words per sentence. Defaults to `5`. */
   minWordsPerSentence?: number;
   /** Maximum words per sentence. Defaults to `15`. */
@@ -114,7 +117,10 @@ function resolveOptions(options: GenerateOptions): ResolvedOptions {
     count: Math.max(1, Math.floor(options.count ?? 3)),
     format: options.format ?? 'text',
     startWithLorem: options.startWithLorem ?? false,
-    intensity: clamp01(options.intensity ?? theme.defaultIntensity ?? 0.5),
+    // `intensity` and its friendly alias `temperature` drive the same dial.
+    intensity: clamp01(
+      options.intensity ?? options.temperature ?? theme.defaultIntensity ?? 0.5,
+    ),
     minWordsPerSentence: minWords,
     maxWordsPerSentence: maxWords,
     minSentencesPerParagraph: minSentences,

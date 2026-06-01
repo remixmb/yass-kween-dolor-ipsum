@@ -67,6 +67,22 @@ describe('intensity — intensifying the yassification', () => {
     expect(calm).not.toBe(extra);
   });
 
+  it('accepts `temperature` as an alias for `intensity`', () => {
+    const viaTemperature = generate({
+      units: 'words',
+      count: 20,
+      temperature: 0.2,
+      seed: 't',
+    });
+    const viaIntensity = generate({
+      units: 'words',
+      count: 20,
+      intensity: 0.2,
+      seed: 't',
+    });
+    expect(viaTemperature).toBe(viaIntensity);
+  });
+
   it('falls back to the theme default intensity when unspecified', () => {
     const explicit = generate({
       theme: 'yass-kween',

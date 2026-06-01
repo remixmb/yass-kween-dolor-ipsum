@@ -39,8 +39,9 @@ OPTIONS
   -c, --count <n>         Count for the chosen unit (default: 3)
   -u, --units <unit>      words | sentences | paragraphs
       --seed <value>      Seed for reproducible output
-  -i, --intensity <n>     Yassification, 0–1 (or 0–100). Lower = calmer,
-                          higher = extra. Defaults to the theme's own level.
+  -i, --temperature <n>   Blend temperature, 0–1 (or 0–100). Cold = raw Latin,
+                          hot = full glam. Alias: --intensity. Defaults to the
+                          theme's own level.
       --html              Wrap output in <p> tags
       --lorem             Start with the classic "Lorem ipsum dolor sit amet"
       --lore              Show the chosen theme's origin story and exit
@@ -53,8 +54,8 @@ EXAMPLES
   yass-ipsum --theme corporate --paragraphs 2
   yass-ipsum -t pirate -s 4 --seed ahoy
   yass-ipsum --words 12 --html
-  yass-ipsum --intensity 0.1          # calm it down — Latin roots resurface
-  yass-ipsum --intensity 100 -p 1     # maximum yassification
+  yass-ipsum --temperature 0.1        # cold — raw Latin resurfaces
+  yass-ipsum --temp 100 -p 1          # hot — maximum yassification
   yass-ipsum --lore
   yass-ipsum --list
 `;
@@ -148,6 +149,8 @@ function parseArgs(argv: string[]): ParsedArgs {
           break;
         case '-i':
         case '--intensity':
+        case '--temp':
+        case '--temperature':
           result.options.intensity = toIntensity(next(i++, arg), arg);
           break;
         case '--html':

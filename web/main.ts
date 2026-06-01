@@ -84,7 +84,7 @@ function selectTheme(id: string): void {
   if (theme) {
     const natural = Math.round((theme.defaultIntensity ?? 0.5) * 100);
     intensityEl.value = String(natural);
-    intensityValueEl.textContent = `${natural}%`;
+    intensityValueEl.textContent = tempLabel(natural);
   }
   render();
 }
@@ -99,6 +99,12 @@ function revealHuttese(): void {
     showToast('A wild Hutt appears 🐸 Bo shuda!');
   }
   selectTheme(huttese.id);
+}
+
+/** Render the temperature value with a cold → hot marker. */
+function tempLabel(pct: number): string {
+  const icon = pct < 25 ? '❄️' : pct < 55 ? '🌤️' : pct < 80 ? '🔥' : '🌋';
+  return `${icon} ${pct}°`;
 }
 
 function syncCountBounds(): void {
@@ -218,7 +224,7 @@ countEl.addEventListener('input', () => {
   render();
 });
 intensityEl.addEventListener('input', () => {
-  intensityValueEl.textContent = `${intensityEl.value}%`;
+  intensityValueEl.textContent = tempLabel(Number(intensityEl.value));
   render();
 });
 seedEl.addEventListener('input', onSeedInput);

@@ -19,12 +19,12 @@ distinct voices — from sassy **Yass Kween** to **Corporate Synergy** to
 
 - **Seven hand-tuned themes** (plus one hidden 🥚), each with its own vocabulary, openers, and interjections.
 - **Blended voices** — the signature themes are _fusions_: **yassified Latin** and **huttese'd Latin**, built on Cicero's genuine lorem ipsum source and transformed word-by-word.
-- **An intensity dial** — lessen or intensify the blend, from raw Latin to maximally extra ✨. Dial to 0 and the ancient text resurfaces; dial up and the voice takes over.
+- **A temperature dial** — run it _cold_ for raw, untouched Latin or _hot_ for maximally extra ✨. The dial controls how far each word is transformed.
 - **Deterministic output** — pass a `seed` and get byte-for-byte reproducible text. Great for tests and shareable snippets.
 - **Three units** — `words`, `sentences`, or `paragraphs`, plus optional `text` or `html` output.
 - **Zero runtime dependencies.** The core is plain, portable TypeScript.
 - **Works everywhere** — library (ESM + CJS), CLI, and browser. Ships full type declarations.
-- **Tested & typed** — 71 tests, ~98% coverage, strict TypeScript, ESLint + Prettier, CI.
+- **Tested & typed** — 73 tests, ~98% coverage, strict TypeScript, ESLint + Prettier, CI.
 
 ## 🎭 Themes
 
@@ -75,40 +75,41 @@ ipsum.paragraphs(3, { theme: 'startup' });
 
 ### `generate(options)`
 
-| Option                                                  | Type                                     | Default        | Description                                 |
-| ------------------------------------------------------- | ---------------------------------------- | -------------- | ------------------------------------------- |
-| `theme`                                                 | `string \| Theme`                        | `'yass-kween'` | Theme id or a custom `Theme` object.        |
-| `units`                                                 | `'words' \| 'sentences' \| 'paragraphs'` | `'paragraphs'` | What to count.                              |
-| `count`                                                 | `number`                                 | `3`            | How many units to produce (clamped to ≥ 1). |
-| `seed`                                                  | `number \| string`                       | —              | Seed for deterministic output.              |
-| `format`                                                | `'text' \| 'html'`                       | `'text'`       | Plain text or `<p>`-wrapped HTML.           |
-| `intensity`                                             | `number` (0–1)                           | theme default  | How "extra" the output is. See below.       |
-| `startWithLorem`                                        | `boolean`                                | `false`        | Begin with "Lorem ipsum dolor sit amet".    |
-| `minWordsPerSentence` / `maxWordsPerSentence`           | `number`                                 | `5` / `15`     | Sentence length bounds.                     |
-| `minSentencesPerParagraph` / `maxSentencesPerParagraph` | `number`                                 | `3` / `6`      | Paragraph length bounds.                    |
+| Option                                                  | Type                                     | Default        | Description                                    |
+| ------------------------------------------------------- | ---------------------------------------- | -------------- | ---------------------------------------------- |
+| `theme`                                                 | `string \| Theme`                        | `'yass-kween'` | Theme id or a custom `Theme` object.           |
+| `units`                                                 | `'words' \| 'sentences' \| 'paragraphs'` | `'paragraphs'` | What to count.                                 |
+| `count`                                                 | `number`                                 | `3`            | How many units to produce (clamped to ≥ 1).    |
+| `seed`                                                  | `number \| string`                       | —              | Seed for deterministic output.                 |
+| `format`                                                | `'text' \| 'html'`                       | `'text'`       | Plain text or `<p>`-wrapped HTML.              |
+| `intensity` / `temperature`                             | `number` (0–1)                           | theme default  | The temperature dial — cold to hot. See below. |
+| `startWithLorem`                                        | `boolean`                                | `false`        | Begin with "Lorem ipsum dolor sit amet".       |
+| `minWordsPerSentence` / `maxWordsPerSentence`           | `number`                                 | `5` / `15`     | Sentence length bounds.                        |
+| `minSentencesPerParagraph` / `maxSentencesPerParagraph` | `number`                                 | `3` / `6`      | Paragraph length bounds.                       |
 
-### 🎚️ Dialing the blend
+### 🌡️ The temperature dial
 
 The signature themes are _blends_: every word starts as genuine Cicero Latin
-and is fused toward the voice, scaled by `intensity` (`0`–`1`). Turn it **down**
-and the raw Latin shows through. Turn it **up** and the voice takes over — Yass
-Kween elongates, SHOUTs, ✨sparkles✨, and swaps in sass:
+and is fused toward the voice, scaled by a **temperature** dial (`0`–`1`). Run
+it **cold** and the raw Latin shows through. Run it **hot** and the voice takes
+over — Yass Kween elongates, SHOUTs, ✨sparkles✨, and swaps in sass. Use
+`intensity` or its alias `temperature` — both drive the same dial.
 
 ```ts
-// Dial to 0 and the genuine lorem ipsum source resurfaces, untouched:
+// ❄️ Cold (0°): the genuine lorem ipsum source resurfaces, untouched:
 generate({
   theme: 'yass-kween',
-  intensity: 0,
+  temperature: 0,
   units: 'sentences',
   count: 1,
   seed: 'gala',
 });
 // → "Vero magnam, cupiditate sed voluptatum molestias corporis dolor neque…"
 
-// Crank it up for fully yassified Latin:
+// 🌋 Hot (100°): fully yassified Latin:
 generate({
   theme: 'yass-kween',
-  intensity: 1,
+  temperature: 1,
   units: 'sentences',
   count: 1,
   seed: 'gala',
@@ -174,7 +175,8 @@ yass-ipsum [options]
   -c, --count <n>         Count for the chosen unit
   -u, --units <unit>      words | sentences | paragraphs
       --seed <value>      Seed for reproducible output
-  -i, --intensity <n>     Yassification, 0–1 (or 0–100). Lower = calmer
+  -i, --temperature <n>   Blend temperature, 0–1 (or 0–100). Cold = raw Latin
+                          (alias: --intensity, --temp)
       --html              Wrap output in <p> tags
       --lorem             Start with "Lorem ipsum dolor sit amet"
       --lore              Show the chosen theme's origin story
@@ -188,7 +190,7 @@ yass-ipsum                                  # three sassy paragraphs
 yass-ipsum --theme corporate --paragraphs 2
 yass-ipsum -t pirate -s 4 --seed ahoy       # reproducible pirate text
 yass-ipsum --words 12 --html
-yass-ipsum --intensity 0.1                  # calm — Latin roots resurface
+yass-ipsum --temperature 0.1                # cold — raw Latin resurfaces
 yass-ipsum --lore                           # the obscure origins of lorem ipsum
 yass-ipsum --seed jabba                      # 🥚 ...what's this?
 ```

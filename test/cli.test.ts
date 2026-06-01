@@ -114,6 +114,22 @@ describe('cli', () => {
     expect(err).toContain('number');
   });
 
+  it('accepts the --temperature / --temp aliases', () => {
+    const temperature = captureRun([
+      '--words',
+      '8',
+      '--temperature',
+      '30',
+      '--seed',
+      't',
+    ]);
+    const temp = captureRun(['--words', '8', '--temp', '30', '--seed', 't']);
+    const intensity = captureRun(['--words', '8', '--intensity', '30', '--seed', 't']);
+    expect(temperature.code).toBe(0);
+    expect(temperature.out).toBe(intensity.out);
+    expect(temp.out).toBe(intensity.out);
+  });
+
   it('prints the Cicero origin story with --lore', () => {
     const { code, out } = captureRun(['--lore']);
     expect(code).toBe(0);

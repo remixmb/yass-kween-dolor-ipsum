@@ -22,59 +22,108 @@
         <p class="kicker">themed placeholder text generator</p>
         <h1>yass&#8209;kween<span class="dim">&#8209;dolor&#8209;ipsum</span></h1>
         <p class="tagline">
-          Lorem ipsum, but make it <em>iconic</em>. Pick a voice, set the dials, and
-          serve perfectly seasoned filler text. 💅
+          Lorem ipsum, but make it <em>iconic</em>. Pick a voice, slide between ancient
+          Latin and full glam, and serve perfectly seasoned filler text. 💅
         </p>
       </header>
 
+      <!-- Inspiration callout: prominent and open by default. -->
+      <aside class="inspiration" aria-labelledby="inspoTitle">
+        <div class="inspiration-icon" aria-hidden="true">💡</div>
+        <div class="inspiration-body">
+          <h2 id="inspoTitle">The mystery behind “lorem ipsum”</h2>
+          <p>
+            It isn’t random gibberish. Lorem ipsum is scrambled Latin from Cicero’s
+            <em>de Finibus Bonorum et Malorum</em> (45 BC) — a treatise on pleasure and
+            pain, where <em>dolorem ipsum</em> means “pain itself.” This whole toy is
+            built on that genuine source: slide the blend toward
+            <strong>Latin</strong> and Cicero resurfaces.
+          </p>
+          <a
+            id="inspoVideo"
+            class="inspiration-cta"
+            href="#"
+            target="_blank"
+            rel="noopener"
+          >
+            ▶ Watch: the mystery of lorem ipsum’s origins
+          </a>
+        </div>
+      </aside>
+
       <section class="panel" aria-label="Generator controls">
-        <div class="themes" id="themes" role="radiogroup" aria-label="Theme">
-          <!-- theme chips injected by main.ts -->
+        <!-- Voice -->
+        <div class="group">
+          <p class="group-label" id="themeLabel">Voice</p>
+          <div
+            class="themes"
+            id="themes"
+            role="radiogroup"
+            aria-labelledby="themeLabel"
+          >
+            <!-- theme chips injected by main.ts -->
+          </div>
         </div>
 
-        <div class="controls">
-          <label class="field">
-            <span class="field-label">Unit</span>
-            <select id="unit">
-              <option value="paragraphs">Paragraphs</option>
-              <option value="sentences">Sentences</option>
-              <option value="words">Words</option>
-            </select>
-          </label>
+        <!-- Blend: Latin ↔ Voice -->
+        <div class="group">
+          <div class="group-head">
+            <p class="group-label">Blend</p>
+            <output id="blendValue" class="group-value" for="intensity"
+              >An even blend</output
+            >
+          </div>
+          <input
+            id="intensity"
+            class="temp"
+            type="range"
+            min="0"
+            max="100"
+            value="85"
+            aria-label="Blend from Latin to the chosen voice"
+            aria-describedby="blendEnds"
+          />
+          <div class="scale-ends" id="blendEnds">
+            <span id="endLo">📜 Latin</span>
+            <span id="endHi">💅 Yass Kween</span>
+          </div>
+        </div>
 
-          <label class="field">
-            <span class="field-label">Count <output id="countValue">3</output></span>
-            <input id="count" type="range" min="1" max="12" value="3" />
-          </label>
-
-          <label class="field">
-            <span class="field-label">
-              Temperature 🌡️ <output id="intensityValue">🔥 85°</output>
-            </span>
-            <input
-              id="intensity"
-              class="temp"
-              type="range"
-              min="0"
-              max="100"
-              value="85"
-            />
-          </label>
-
-          <label class="field">
-            <span class="field-label">Seed <small>(editable · shareable)</small></span>
-            <input id="seed" type="text" placeholder="random" autocomplete="off" />
-          </label>
-
-          <div class="field toggles">
-            <label class="toggle">
-              <input id="html" type="checkbox" />
-              <span>HTML output</span>
+        <!-- Shape -->
+        <div class="group">
+          <p class="group-label">Shape</p>
+          <div class="controls">
+            <label class="field">
+              <span class="field-label">Amount of</span>
+              <select id="unit" aria-label="Unit to generate">
+                <option value="paragraphs">Paragraphs</option>
+                <option value="sentences">Sentences</option>
+                <option value="words">Words</option>
+              </select>
             </label>
-            <label class="toggle">
-              <input id="lorem" type="checkbox" />
-              <span>Start with “Lorem ipsum”</span>
+
+            <label class="field">
+              <span class="field-label">Count <output id="countValue">3</output></span>
+              <input id="count" type="range" min="1" max="12" value="3" />
             </label>
+
+            <label class="field">
+              <span class="field-label"
+                >Seed <small>(editable · shareable)</small></span
+              >
+              <input id="seed" type="text" placeholder="random" autocomplete="off" />
+            </label>
+
+            <div class="field toggles">
+              <label class="toggle">
+                <input id="lorem" type="checkbox" />
+                <span>Start with “Lorem ipsum”</span>
+              </label>
+              <label class="toggle">
+                <input id="html" type="checkbox" />
+                <span>HTML output</span>
+              </label>
+            </div>
           </div>
         </div>
 
@@ -93,7 +142,7 @@
         <article id="output" class="output"></article>
 
         <details id="loreBox" class="lore" hidden>
-          <summary>📜 The obscure origins of this voice</summary>
+          <summary>📜 More about this voice</summary>
           <p id="loreText"></p>
         </details>
       </section>

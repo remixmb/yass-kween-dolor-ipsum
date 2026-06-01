@@ -49,3 +49,11 @@ jobs:
         run: npm run build
       - name: Build web demo
         run: npm run build:web
+      # Upload the built demo so it can be downloaded and previewed from the
+      # run summary (handy for reviewing PRs before they reach the live site).
+      - name: Upload web demo preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-demo-${{ github.sha }}
+          path: dist-web
+          if-no-files-found: error

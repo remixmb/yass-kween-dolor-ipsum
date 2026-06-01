@@ -11,6 +11,9 @@ distinct voices — from sassy **Yass Kween** to **Corporate Synergy** to
 
 **[▶ Live demo](https://remixmb.github.io/yass-kween-dolor-ipsum/)**
 
+[![CI](https://github.com/remixmb/yass-kween-dolor-ipsum/actions/workflows/ci.yml/badge.svg)](https://github.com/remixmb/yass-kween-dolor-ipsum/actions/workflows/ci.yml)
+[![Deploy web demo](https://github.com/remixmb/yass-kween-dolor-ipsum/actions/workflows/deploy.yml/badge.svg)](https://github.com/remixmb/yass-kween-dolor-ipsum/actions/workflows/deploy.yml)
+
 [Themes](#-themes) · [Quick start](#-quick-start) · [API](#-api) · [CLI](#️-cli) · [Web demo](#-web-demo) · [Design](#️-design-notes)
 
 </div>

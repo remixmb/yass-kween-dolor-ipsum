@@ -16,6 +16,16 @@ distinct voices — from sassy **Yass Kween** to **Corporate Synergy** to
 
 [Themes](#-themes) · [Quick start](#-quick-start) · [API](#-api) · [CLI](#️-cli) · [Web demo](#-web-demo) · [Design](#️-design-notes)
 
+<br />
+
+<a href="https://remixmb.github.io/yass-kween-dolor-ipsum/">
+  <img
+    src="./assets/demo.png"
+    alt="The yass-kween-dolor-ipsum web demo: a prominent callout about the origins of lorem ipsum, theme chips, a Latin ↔ Voice blend dial, and yassified-Latin output."
+    width="760"
+  />
+</a>
+
 </div>
 
 ---

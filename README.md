@@ -18,25 +18,25 @@ distinct voices — from sassy **Yass Kween** to **Corporate Synergy** to
 ## ✨ Highlights
 
 - **Seven hand-tuned themes** (plus one hidden 🥚), each with its own vocabulary, openers, and interjections.
-- **An intensity dial** — lessen or intensify the yassification, from calm to maximally extra ✨.
-- **Themes carry their origins** — turn Yass Kween down and lorem ipsum's genuine Latin source resurfaces.
+- **Blended voices** — the signature themes are _fusions_: **yassified Latin** and **huttese'd Latin**, built on Cicero's genuine lorem ipsum source and transformed word-by-word.
+- **An intensity dial** — lessen or intensify the blend, from raw Latin to maximally extra ✨. Dial to 0 and the ancient text resurfaces; dial up and the voice takes over.
 - **Deterministic output** — pass a `seed` and get byte-for-byte reproducible text. Great for tests and shareable snippets.
 - **Three units** — `words`, `sentences`, or `paragraphs`, plus optional `text` or `html` output.
 - **Zero runtime dependencies.** The core is plain, portable TypeScript.
 - **Works everywhere** — library (ESM + CJS), CLI, and browser. Ships full type declarations.
-- **Tested & typed** — 68 tests, ~98% coverage, strict TypeScript, ESLint + Prettier, CI.
+- **Tested & typed** — 71 tests, ~98% coverage, strict TypeScript, ESLint + Prettier, CI.
 
 ## 🎭 Themes
 
-| Theme                | id           | Vibe                                                        |
-| -------------------- | ------------ | ----------------------------------------------------------- |
-| 💅 Yass Kween        | `yass-kween` | Sassy, supportive, and absolutely serving. The house voice. |
-| 📜 Classic Lorem     | `classic`    | The timeless Latin-flavored filler everyone knows.          |
-| 📈 Corporate Synergy | `corporate`  | Leverage best-in-class buzzwords to circle back on copy.    |
-| 🏴‍☠️ Pirate Shanty     | `pirate`     | Salty seafaring filler for landlubbers. Arr.                |
-| 👾 Hacker Terminal   | `hacker`     | Cyber-thriller technobabble. We're in.                      |
-| 🚀 Startup Pitch     | `startup`    | It's like Uber, but for placeholder text.                   |
-| 🍃 Zen Garden        | `zen`        | Calm, mindful filler. Breathe in, breathe out.              |
+| Theme                | id           | Vibe                                                           |
+| -------------------- | ------------ | -------------------------------------------------------------- |
+| 💅 Yass Kween        | `yass-kween` | Yassified Latin — Cicero, but make it iconic. The house voice. |
+| 📜 Classic Lorem     | `classic`    | The timeless Latin-flavored filler everyone knows.             |
+| 📈 Corporate Synergy | `corporate`  | Leverage best-in-class buzzwords to circle back on copy.       |
+| 🏴‍☠️ Pirate Shanty     | `pirate`     | Salty seafaring filler for landlubbers. Arr.                   |
+| 👾 Hacker Terminal   | `hacker`     | Cyber-thriller technobabble. We're in.                         |
+| 🚀 Startup Pitch     | `startup`    | It's like Uber, but for placeholder text.                      |
+| 🍃 Zen Garden        | `zen`        | Calm, mindful filler. Breathe in, breathe out.                 |
 
 ## 🚀 Quick start
 
@@ -87,44 +87,51 @@ ipsum.paragraphs(3, { theme: 'startup' });
 | `minWordsPerSentence` / `maxWordsPerSentence`           | `number`                                 | `5` / `15`     | Sentence length bounds.                     |
 | `minSentencesPerParagraph` / `maxSentencesPerParagraph` | `number`                                 | `3` / `6`      | Paragraph length bounds.                    |
 
-### 🎚️ Dialing the yassification
+### 🎚️ Dialing the blend
 
-The `intensity` option (`0`–`1`) controls how _extra_ the output is. Turn it
-**down** and sentences get calmer, openers and interjections fade, and themes
-with origin roots reveal their backstory. Turn it **up** for maximum flair —
-more punctuation, and the theme's own stylizer goes all-in (Yass Kween starts
-to elongate, SHOUT, and ✨sparkle✨).
+The signature themes are _blends_: every word starts as genuine Cicero Latin
+and is fused toward the voice, scaled by `intensity` (`0`–`1`). Turn it **down**
+and the raw Latin shows through. Turn it **up** and the voice takes over — Yass
+Kween elongates, SHOUTs, ✨sparkles✨, and swaps in sass:
 
 ```ts
-// Maximum glam 💅
-generate({ theme: 'yass-kween', intensity: 1, seed: 'glam' });
-// → "Glowing💖 GLOW understood thriving UNBOTHERED manifestingss GLITTER…"
-
-// Dial it to zero and Yass Kween reveals lorem ipsum's true origins:
+// Dial to 0 and the genuine lorem ipsum source resurfaces, untouched:
 generate({
   theme: 'yass-kween',
   intensity: 0,
-  units: 'words',
-  count: 10,
-  seed: 'cicero',
+  units: 'sentences',
+  count: 1,
+  seed: 'gala',
 });
-// → "porro modi numquam non aliquam laboriosam atque voluptatum incidunt modi"
+// → "Vero magnam, cupiditate sed voluptatum molestias corporis dolor neque…"
+
+// Crank it up for fully yassified Latin:
+generate({
+  theme: 'yass-kween',
+  intensity: 1,
+  units: 'sentences',
+  count: 1,
+  seed: 'gala',
+});
+// → "QUAERAT NUMQUAMYY slay CHARACTER tiara DIVINEE unstoppableeee✨ EXCEPTURI…"
 ```
 
 > **The obscure origins.** Lorem ipsum isn't gibberish — it's scrambled Latin
 > from Cicero's _de Finibus Bonorum et Malorum_ (45 BC), a treatise on pleasure
-> and pain, where _dolorem ipsum_ means "pain itself." The **Yass Kween** theme
-> carries those genuine roots: lower the dial and the ancient text resurfaces.
-> Read any theme's backstory with `theme.origin` (or `yass-ipsum --lore`).
+> and pain, where _dolorem ipsum_ means "pain itself." Yass Kween is built right
+> on top of that genuine source. Read any theme's backstory with `theme.origin`
+> (or `yass-ipsum --lore`).
 
 ### 🥚 A hidden Easter egg
 
-There's a secret eighth voice. Use the seed **`jabba`** (case-insensitive) and a
-certain Hutt takes over, whatever theme you asked for:
+There's a secret eighth voice: **huttese'd Latin**. Use the seed **`jabba`**
+(case-insensitive) and a certain Hutt takes over — Cicero's Latin gets mutated
+toward the language of the Hutts (c→k, v→w, stretched vowels) and sprinkled with
+genuine Huttese, whatever theme you asked for:
 
 ```ts
 generate({ seed: 'jabba', units: 'sentences', count: 1 });
-// → "Ee youdsa rundee wanta tweepi wooky goodde wanta kung!"  (Huttese 🐸)
+// → "Ee youdsa yatuka mooie wooluptatem, murishani, noostrum numkwam!"  (🐸)
 ```
 
 In the web demo, typing `jabba` into the seed field reveals the hidden theme

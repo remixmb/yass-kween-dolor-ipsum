@@ -134,15 +134,17 @@ function stripTrailingPunctuation(text: string): string {
 }
 
 /**
- * Sample one raw vocabulary word. With probability `(1 - intensity)` the
- * theme's origin words are favored when present, so lowering the dial surfaces
- * a theme's roots (e.g. Yass Kween's genuine Latin source text).
+ * Sample one raw vocabulary word. Blend themes always draw from their base
+ * lexicon (the genuine Latin lorem ipsum source); the theme's `intensify` then
+ * fuses each Latin word toward the voice, scaled by intensity — producing
+ * "yassified Latin" / "huttese'd Latin". Non-blend themes draw from their own
+ * vocabulary.
  */
 function sampleVocab(opts: ResolvedOptions): string {
-  const { theme, rng, intensity } = opts;
-  const origins = theme.originWords;
-  if (origins && origins.length > 0 && chance(rng, 1 - intensity)) {
-    return pick(rng, origins);
+  const { theme, rng } = opts;
+  const base = theme.blendBase;
+  if (base && base.length > 0) {
+    return pick(rng, base);
   }
   return pick(rng, theme.words);
 }
@@ -267,19 +269,17 @@ function wrapHtml(blocks: string[]): string {
   return blocks.map((block) => `<p>${block}</p>`).join('\n');
 }
 
-/**
- * Generate themed placeholder text.
- *
- * @example
- * ```ts
- * generate({ theme: 'pirate', units: 'sentences', count: 2, seed: 'ahoy' });
- * // Lower the dial to reveal Yass Kween's genuine Latin origins:
- * generate({ theme: 'yass-kween', intensity: 0.1, seed: 'cicero' });
- * ```
- */
-export function generate(options: GenerateOptions = {}): string {
-  const opts = resolveOptions(options);
+/** The text plus metadata about how it was produced. */
+export interface GenerateResult {
+  /** The generated text. */
+  text: string;
+  /** The theme actually used (after any Easter-egg override). */
+  theme: Theme;
+  /** The resolved intensity in `[0, 1]`. */
+  intensity: number;
+}
 
+function buildText(opts: ResolvedOptions): string {
   if (opts.units === 'words') {
     const words = buildWords(opts);
     return opts.format === 'html' ? `<p>${words}</p>` : words;
@@ -300,6 +300,30 @@ export function generate(options: GenerateOptions = {}): string {
   }
 
   return opts.format === 'html' ? wrapHtml(blocks) : blocks.join('\n\n');
+}
+
+/**
+ * Generate themed placeholder text along with the theme and intensity used.
+ * Handy when the {@link GenerateOptions.seed} might trigger the hidden Easter
+ * egg and you want to know which voice actually spoke.
+ */
+export function generateDetailed(options: GenerateOptions = {}): GenerateResult {
+  const opts = resolveOptions(options);
+  return { text: buildText(opts), theme: opts.theme, intensity: opts.intensity };
+}
+
+/**
+ * Generate themed placeholder text.
+ *
+ * @example
+ * ```ts
+ * generate({ theme: 'pirate', units: 'sentences', count: 2, seed: 'ahoy' });
+ * // Lower the dial to reveal the genuine Latin under the yassified blend:
+ * generate({ theme: 'yass-kween', intensity: 0.1, seed: 'cicero' });
+ * ```
+ */
+export function generate(options: GenerateOptions = {}): string {
+  return generateDetailed(options).text;
 }
 
 /**

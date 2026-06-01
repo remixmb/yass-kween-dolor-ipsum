@@ -37,11 +37,13 @@ export interface Theme {
    */
   interjections?: string[];
   /**
-   * Optional "etymological roots" vocabulary. These words surface more often at
-   * *low* intensity, letting a theme carry an origin or backstory. The Yass
-   * Kween theme uses this to reveal the genuine Latin source of lorem ipsum.
+   * Optional base lexicon for a *blend* theme. When set, every word starts from
+   * this vocabulary (the genuine Latin lorem ipsum source) and is fused toward
+   * the theme's voice by {@link Theme.intensify}, scaled by intensity. This is
+   * what produces "yassified Latin" and "huttese'd Latin": at intensity 0 the
+   * raw Latin shows through; as the dial climbs, the voice takes over.
    */
-  originWords?: string[];
+  blendBase?: readonly string[];
   /**
    * Optional note describing the theme's origin or backstory, surfaced by the
    * CLI (`--lore`) and the web demo.
@@ -53,10 +55,11 @@ export interface Theme {
    */
   defaultIntensity?: number;
   /**
-   * Optional per-word stylizer applied to sampled vocabulary, scaled by the
-   * current intensity (`0`–`1`). The Yass Kween theme uses it to elongate,
-   * SHOUT, and sparkle ✨ its words as the dial climbs. Must not introduce
-   * whitespace.
+   * Optional per-word transformer, scaled by the current intensity (`0`–`1`).
+   * For a blend theme it fuses the base Latin word toward the voice — Yass
+   * Kween elongates, SHOUTs, sparkles ✨, and swaps in sass; Huttese mutates
+   * Latin phonetics and swaps in genuine Huttese. For a plain theme it simply
+   * stylizes its own vocabulary. Must not introduce whitespace.
    */
   intensify?: (word: string, intensity: number, rng: RandomFn) => string;
 }

@@ -5,114 +5,112 @@ import { LOREM_ORIGIN_WORDS, LOREM_ORIGIN_STORY } from './origins.js';
 const SPARKLES = ['✨', '💅', '👑', '💖', '🔥'] as const;
 const VOWELS = new Set(['a', 'e', 'i', 'o', 'u', 'y']);
 
+/** The sass vocabulary fused into the Latin as the dial climbs. */
+const SASS = [
+  'slay',
+  'queen',
+  'iconic',
+  'serving',
+  'looks',
+  'periodt',
+  'vibe',
+  'energy',
+  'flawless',
+  'gorgeous',
+  'stunning',
+  'glamour',
+  'fierce',
+  'legendary',
+  'main',
+  'character',
+  'moment',
+  'understood',
+  'assignment',
+  'ate',
+  'crumbs',
+  'sparkle',
+  'shine',
+  'glow',
+  'radiant',
+  'confidence',
+  'unbothered',
+  'thriving',
+  'blessed',
+  'manifesting',
+  'aura',
+  'goddess',
+  'royalty',
+  'crown',
+  'tiara',
+  'glitter',
+  'fabulous',
+  'devastating',
+  'chic',
+  'effortless',
+  'snatched',
+  'majestic',
+  'divine',
+  'reign',
+  'supreme',
+  'unstoppable',
+  'powerful',
+  'magnetic',
+  'dazzling',
+  'opulent',
+  'luxurious',
+  'extravagant',
+  'bold',
+  'brilliant',
+  'radiance',
+  'magic',
+];
+
 /**
- * The signature stylizer. As intensity climbs from 0 → 1 the word gets more
- * extra: elongated vowels ("slay" → "slayyy"), the occasional SHOUT, and a
- * sprinkle of sparkle. At low intensity it leaves words untouched so the
- * ancient Latin roots can shine through. Never introduces whitespace.
+ * Yassify a word. Each base Latin word is fused toward the sass: as intensity
+ * climbs it may be swapped for a sass word, then elongated, SHOUTED, and
+ * sparkled. At intensity 0 the Latin passes through untouched, so lowering the
+ * dial reveals Cicero underneath the glam. Never introduces whitespace.
  */
 function yassify(word: string, intensity: number, rng: RandomFn): string {
-  let w = word;
+  // Blend: sometimes swap the Latin root for full sass, more often as the dial
+  // climbs — the rest stays Latin, yielding yassified Latin.
+  let w = chance(rng, intensity * 0.5) ? pick(rng, SASS) : word;
 
-  // Elongate a trailing vowel for emphasis once we're past the midpoint.
-  if (intensity > 0.55 && chance(rng, (intensity - 0.5) * 0.7)) {
+  // Elongate a trailing letter for emphasis.
+  if (intensity > 0.4 && chance(rng, (intensity - 0.35) * 0.7)) {
     const last = w[w.length - 1] ?? '';
-    if (VOWELS.has(last.toLowerCase())) {
-      w += last.repeat(intBetween(rng, 1, 3));
-    } else {
-      // Append a trailing flourish vowel for consonant-final words.
-      const flourish = pick(rng, ['yy', 'ss', 'hh']);
-      w += flourish;
-    }
+    w += VOWELS.has(last.toLowerCase())
+      ? last.repeat(intBetween(rng, 1, 3))
+      : pick(rng, ['yy', 'ss', 'hh']);
   }
 
   // SHOUT the whole word when things get truly iconic.
-  if (intensity > 0.75 && chance(rng, (intensity - 0.7) * 0.6)) {
+  if (intensity > 0.7 && chance(rng, (intensity - 0.65) * 0.6)) {
     w = w.toUpperCase();
   }
 
   // Sprinkle sparkle, scaled by intensity.
-  if (chance(rng, intensity * 0.18)) {
+  if (chance(rng, intensity * 0.16)) {
     w += pick(rng, SPARKLES);
   }
 
   return w;
 }
 
-/** The signature voice of the project: unapologetically sassy, supportive, extra. */
+/**
+ * The signature voice: yassified Latin. Built on Cicero's genuine lorem ipsum
+ * vocabulary and fused with sass as the intensity dial climbs.
+ */
 export const yasskween: Theme = {
   id: 'yass-kween',
   name: 'Yass Kween',
-  description: 'Sassy, supportive, and absolutely serving. The house voice.',
+  description: 'Yassified Latin — Cicero, but make it iconic. The house voice.',
   emoji: '💅',
   defaultIntensity: 0.85,
   origin: LOREM_ORIGIN_STORY,
-  // At low intensity these genuine Cicero words resurface, carrying the
-  // obscure origins of lorem ipsum.
-  originWords: [...LOREM_ORIGIN_WORDS],
-  words: [
-    'slay',
-    'queen',
-    'iconic',
-    'serving',
-    'looks',
-    'periodt',
-    'vibe',
-    'energy',
-    'flawless',
-    'gorgeous',
-    'stunning',
-    'glamour',
-    'fierce',
-    'legendary',
-    'main',
-    'character',
-    'moment',
-    'understood',
-    'the',
-    'assignment',
-    'ate',
-    'left',
-    'no',
-    'crumbs',
-    'sparkle',
-    'shine',
-    'glow',
-    'radiant',
-    'confidence',
-    'unbothered',
-    'thriving',
-    'blessed',
-    'manifesting',
-    'aura',
-    'goddess',
-    'royalty',
-    'crown',
-    'tiara',
-    'glitter',
-    'fabulous',
-    'devastating',
-    'chic',
-    'effortless',
-    'snatched',
-    'glowing',
-    'majestic',
-    'divine',
-    'reign',
-    'rule',
-    'supreme',
-    'unstoppable',
-    'powerful',
-    'magnetic',
-    'dazzling',
-    'opulent',
-    'luxurious',
-    'extravagant',
-    'bold',
-    'brilliant',
-    'radiance',
-    'magic',
-  ],
+  // The genuine Latin source of lorem ipsum is the canvas; yassify paints on it.
+  blendBase: [...LOREM_ORIGIN_WORDS],
+  words: SASS,
   openers: [
     'Honestly,',
     'Not to be dramatic, but',

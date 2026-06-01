@@ -8,8 +8,10 @@
 
 export {
   generate,
+  generateDetailed,
   ipsum,
   type GenerateOptions,
+  type GenerateResult,
   type Unit,
   type Format,
 } from './generator.js';

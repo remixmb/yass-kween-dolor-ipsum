@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { run } from '../src/cli.js';
-import { getTheme } from '../src/index.js';
 
 /** Capture stdout/stderr writes produced while running the CLI. */
 function captureRun(argv: string[]): { code: number; out: string; err: string } {
@@ -132,12 +131,12 @@ describe('cli', () => {
     expect(out).not.toContain('huttese');
   });
 
-  it('summons Huttese via the --seed jabba easter egg', () => {
+  it('summons the Huttese blend via the --seed jabba easter egg', () => {
     const { code, out } = captureRun(['--words', '10', '--seed', 'jabba']);
     expect(code).toBe(0);
-    const hutteseWords = new Set(getTheme('huttese')!.words);
-    for (const word of out.trim().split(/\s+/)) {
-      expect(hutteseWords.has(word)).toBe(true);
-    }
+    expect(out.trim().split(/\s+/)).toHaveLength(10);
+    // The egg output differs from the same options under a plain seed.
+    const plain = captureRun(['--words', '10', '--seed', 'not-jabba']);
+    expect(out).not.toBe(plain.out);
   });
 });

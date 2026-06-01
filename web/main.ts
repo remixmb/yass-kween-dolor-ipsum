@@ -1,5 +1,6 @@
 import {
   generate,
+  generateDetailed,
   visibleThemes,
   getTheme,
   DEFAULT_THEME_ID,
@@ -142,16 +143,13 @@ function renderLore(theme: Theme | undefined): void {
 
 function render(): void {
   const options = currentOptions();
-  // The library may override the theme via the Jabba Easter egg, so reflect
-  // whatever it actually used.
-  const seed = seedEl.value.trim().toLowerCase();
-  const effectiveId = seed === EASTER_EGG_SEED ? EASTER_EGG_THEME_ID : activeThemeId;
-  const theme = getTheme(effectiveId);
-  if (theme) outputLabelEl.textContent = `${theme.emoji} ${theme.name}`;
-  renderLore(theme);
+  // The library may override the theme via the Jabba Easter egg, so let it tell
+  // us which voice actually spoke.
+  const result = generateDetailed({ ...options, format: 'text' });
+  outputLabelEl.textContent = `${result.theme.emoji} ${result.theme.name}`;
+  renderLore(result.theme);
 
-  // Always generate a plain-text version for the stats + copy buffer.
-  const plain = generate({ ...options, format: 'text' });
+  const plain = result.text;
   lastPlainText = htmlEl.checked ? generate({ ...options, format: 'html' }) : plain;
   outputStatsEl.textContent = computeStats(plain);
 

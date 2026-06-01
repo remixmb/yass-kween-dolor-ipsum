@@ -28,8 +28,9 @@ const intensityValueEl = el<HTMLOutputElement>('intensityValue');
 const seedEl = el<HTMLInputElement>('seed');
 const htmlEl = el<HTMLInputElement>('html');
 const loremEl = el<HTMLInputElement>('lorem');
-const generateBtn = el<HTMLButtonElement>('generate');
+const shuffleBtn = el<HTMLButtonElement>('shuffle');
 const copyBtn = el<HTMLButtonElement>('copy');
+const linkBtn = el<HTMLButtonElement>('link');
 const outputEl = el<HTMLElement>('output');
 const outputLabelEl = el<HTMLSpanElement>('outputLabel');
 const outputStatsEl = el<HTMLSpanElement>('outputStats');
@@ -41,7 +42,7 @@ let activeThemeId: string = DEFAULT_THEME_ID;
 let lastPlainText = '';
 let hutteseRevealed = false;
 
-/** Sensible per-unit defaults for the count slider. */
+/** Sensible per-unit defaults and ceilings for the count slider. */
 const COUNT_DEFAULTS: Record<Unit, number> = {
   paragraphs: 3,
   sentences: 5,
@@ -52,6 +53,17 @@ const COUNT_MAX: Record<Unit, number> = {
   sentences: 20,
   words: 120,
 };
+
+/** A short, URL-friendly random seed. */
+function randomSeed(): string {
+  return Math.random().toString(36).slice(2, 8);
+}
+
+/** Render the temperature value with a cold → hot marker. */
+function tempLabel(pct: number): string {
+  const icon = pct < 25 ? '❄️' : pct < 55 ? '🌤️' : pct < 80 ? '🔥' : '🌋';
+  return `${icon} ${pct}°`;
+}
 
 function addThemeChip(theme: Theme): void {
   const chip = document.createElement('button');
@@ -72,39 +84,47 @@ function buildThemeChips(): void {
   for (const theme of visibleThemes) addThemeChip(theme);
 }
 
-function selectTheme(id: string): void {
+/** Update which chip is highlighted, without touching other controls. */
+function setActiveTheme(id: string): void {
   activeThemeId = id;
   for (const chip of Array.from(themesEl.children) as HTMLButtonElement[]) {
     const isActive = chip.dataset.id === id;
     chip.classList.toggle('active', isActive);
     chip.setAttribute('aria-checked', String(isActive));
   }
-  // Adopt the theme's natural intensity when switching.
-  const theme = getTheme(id);
-  if (theme) {
-    const natural = Math.round((theme.defaultIntensity ?? 0.5) * 100);
-    intensityEl.value = String(natural);
-    intensityValueEl.textContent = tempLabel(natural);
+}
+
+/** Ensure a hidden theme's chip exists (used to reveal the Easter egg). */
+function ensureChip(id: string): void {
+  if (Array.from(themesEl.children).some((c) => (c as HTMLElement).dataset.id === id)) {
+    return;
   }
+  const theme = getTheme(id);
+  if (theme) addThemeChip(theme);
+}
+
+/** User clicked a chip: switch theme and adopt its natural temperature. */
+function selectTheme(id: string): void {
+  setActiveTheme(id);
+  const theme = getTheme(id);
+  if (theme) setTemperature(Math.round((theme.defaultIntensity ?? 0.5) * 100));
   render();
 }
 
-/** Reveal the hidden Huttese chip — triggered by the Jabba Easter egg. */
-function revealHuttese(): void {
-  const huttese = getTheme(EASTER_EGG_THEME_ID);
-  if (!huttese) return;
-  if (!hutteseRevealed) {
-    hutteseRevealed = true;
-    addThemeChip(huttese);
-    showToast('A wild Hutt appears 🐸 Bo shuda!');
-  }
-  selectTheme(huttese.id);
+function setTemperature(pct: number): void {
+  intensityEl.value = String(pct);
+  intensityValueEl.textContent = tempLabel(pct);
 }
 
-/** Render the temperature value with a cold → hot marker. */
-function tempLabel(pct: number): string {
-  const icon = pct < 25 ? '❄️' : pct < 55 ? '🌤️' : pct < 80 ? '🔥' : '🌋';
-  return `${icon} ${pct}°`;
+/** Reveal + select the hidden Huttese theme — the Jabba Easter egg. */
+function revealHuttese(quiet = false): void {
+  const huttese = getTheme(EASTER_EGG_THEME_ID);
+  if (!huttese) return;
+  const firstReveal = !hutteseRevealed;
+  hutteseRevealed = true;
+  ensureChip(huttese.id);
+  if (firstReveal && !quiet) showToast('A wild Hutt appears 🐸 Bo shuda!');
+  setActiveTheme(huttese.id);
 }
 
 function syncCountBounds(): void {
@@ -117,18 +137,16 @@ function syncCountBounds(): void {
 }
 
 function currentOptions(): GenerateOptions {
-  const unit = unitEl.value as Unit;
-  const seed = seedEl.value.trim();
-  const options: GenerateOptions = {
+  return {
     theme: activeThemeId,
-    units: unit,
+    units: unitEl.value as Unit,
     count: Number(countEl.value),
     format: htmlEl.checked ? 'html' : 'text',
     startWithLorem: loremEl.checked,
     intensity: Number(intensityEl.value) / 100,
+    // The field is always populated, so output is reproducible and shareable.
+    seed: seedEl.value.trim(),
   };
-  if (seed) options.seed = seed;
-  return options;
 }
 
 function computeStats(plain: string): string {
@@ -145,6 +163,21 @@ function renderLore(theme: Theme | undefined): void {
   } else {
     loreBoxEl.hidden = true;
   }
+}
+
+/** Reflect the current state in the URL so it can be copied and shared. */
+function buildPermalink(): string {
+  const p = new URLSearchParams();
+  p.set('theme', activeThemeId);
+  p.set('units', unitEl.value);
+  p.set('count', countEl.value);
+  p.set('temp', intensityEl.value);
+  p.set('seed', seedEl.value.trim());
+  if (htmlEl.checked) p.set('html', '1');
+  if (loremEl.checked) p.set('lorem', '1');
+  const query = `?${p.toString()}`;
+  history.replaceState(null, '', query);
+  return `${location.origin}${location.pathname}${query}`;
 }
 
 function render(): void {
@@ -167,11 +200,13 @@ function render(): void {
     outputEl.classList.remove('code');
     outputEl.innerHTML = '';
     for (const block of plain.split('\n\n')) {
-      const p = document.createElement('p');
-      p.textContent = block;
-      outputEl.appendChild(p);
+      const para = document.createElement('p');
+      para.textContent = block;
+      outputEl.appendChild(para);
     }
   }
+
+  buildPermalink();
 }
 
 let toastTimer: ReturnType<typeof setTimeout> | undefined;
@@ -182,8 +217,7 @@ function showToast(message: string): void {
   toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2200);
 }
 
-async function copyOutput(): Promise<void> {
-  const text = lastPlainText;
+async function copyText(text: string, message: string): Promise<void> {
   try {
     if (navigator.clipboard?.writeText) {
       await navigator.clipboard.writeText(text);
@@ -198,7 +232,7 @@ async function copyOutput(): Promise<void> {
       document.execCommand('copy');
       document.body.removeChild(ta);
     }
-    showToast('Copied to clipboard ✨');
+    showToast(message);
   } catch {
     showToast('Could not copy — select and copy manually.');
   }
@@ -207,9 +241,51 @@ async function copyOutput(): Promise<void> {
 function onSeedInput(): void {
   if (seedEl.value.trim().toLowerCase() === EASTER_EGG_SEED) {
     revealHuttese();
-    return;
   }
   render();
+}
+
+/** Restore state from the URL query, falling back to sensible defaults. */
+function applyStateFromUrl(): void {
+  const p = new URLSearchParams(location.search);
+
+  const unit = p.get('units');
+  if (unit && unit in COUNT_DEFAULTS) unitEl.value = unit;
+  syncCountBounds();
+
+  const count = Number(p.get('count'));
+  if (Number.isFinite(count) && count >= 1) {
+    const unitKey = unitEl.value as Unit;
+    countEl.value = String(Math.min(count, COUNT_MAX[unitKey]));
+  }
+  countValueEl.textContent = countEl.value;
+
+  htmlEl.checked = p.get('html') === '1';
+  loremEl.checked = p.get('lorem') === '1';
+
+  const seed = p.get('seed');
+  seedEl.value = seed && seed.trim() ? seed.trim() : randomSeed();
+
+  // Theme: reveal the hidden one if requested directly or via the egg seed.
+  const themeParam = p.get('theme');
+  if (seedEl.value.toLowerCase() === EASTER_EGG_SEED) {
+    revealHuttese(true);
+  } else if (themeParam && getTheme(themeParam)) {
+    ensureChip(themeParam);
+    setActiveTheme(themeParam);
+    if (getTheme(themeParam)?.hidden) hutteseRevealed = true;
+  } else {
+    setActiveTheme(DEFAULT_THEME_ID);
+  }
+
+  // Temperature: honor the URL value, else the active theme's natural level.
+  const temp = Number(p.get('temp'));
+  if (Number.isFinite(temp) && p.get('temp') !== null) {
+    setTemperature(Math.min(100, Math.max(0, Math.round(temp))));
+  } else {
+    const t = getTheme(activeThemeId)?.defaultIntensity ?? 0.5;
+    setTemperature(Math.round(t * 100));
+  }
 }
 
 // Wire up events.
@@ -230,17 +306,18 @@ intensityEl.addEventListener('input', () => {
 seedEl.addEventListener('input', onSeedInput);
 htmlEl.addEventListener('change', render);
 loremEl.addEventListener('change', render);
-generateBtn.addEventListener('click', () => {
+shuffleBtn.addEventListener('click', () => {
+  // A fresh seed — unless the user has summoned Jabba and wants to stay.
+  seedEl.value = randomSeed();
   render();
-  generateBtn.classList.remove('pulse');
-  // Force reflow so the animation can replay.
-  void generateBtn.offsetWidth;
-  generateBtn.classList.add('pulse');
+  shuffleBtn.classList.remove('pulse');
+  void shuffleBtn.offsetWidth; // force reflow so the animation can replay
+  shuffleBtn.classList.add('pulse');
 });
-copyBtn.addEventListener('click', copyOutput);
+copyBtn.addEventListener('click', () => copyText(lastPlainText, 'Copied text ✨'));
+linkBtn.addEventListener('click', () => copyText(buildPermalink(), 'Link copied 🔗'));
 
 // Initialize.
 buildThemeChips();
-selectTheme(activeThemeId);
-syncCountBounds();
+applyStateFromUrl();
 render();

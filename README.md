@@ -29,7 +29,7 @@ distinct voices — from sassy **Yass Kween** to **Corporate Synergy** to
 - **Three units** — `words`, `sentences`, or `paragraphs`, plus optional `text` or `html` output.
 - **Zero runtime dependencies.** The core is plain, portable TypeScript.
 - **Works everywhere** — library (ESM + CJS), CLI, and browser. Ships full type declarations.
-- **Tested & typed** — 73 tests, ~98% coverage, strict TypeScript, ESLint + Prettier, CI.
+- **Tested & typed** — 74 tests, ~98% coverage, strict TypeScript, ESLint + Prettier, CI.
 
 ## 🎭 Themes
 
@@ -203,9 +203,17 @@ yass-ipsum --seed jabba                      # 🥚 ...what's this?
 ## 🌐 Web demo
 
 `npm run dev` starts a Vite dev server with an interactive playground: pick a
-theme, tune the unit/count, set a seed, toggle HTML, and copy the result with
+theme, tune the unit/count, slide the temperature dial, and copy the result with
 one click. Build a static bundle with `npm run build:web` (output in
 `dist-web/`).
+
+Every result is **reproducible and shareable** — the seed is always shown and
+editable, **🎲 Shuffle** rolls a new one, and **🔗 Copy link** yields a
+permalink that encodes the full state (`?theme=…&seed=…&temp=…&units=…`), so
+anyone who opens it sees the exact same output.
+
+> **HTML output is escaped.** When `format: 'html'`, content is HTML-escaped
+> (`&`, `<`, `>`), so even a custom theme's vocabulary can't inject markup.
 
 ## 🏗️ Design notes
 

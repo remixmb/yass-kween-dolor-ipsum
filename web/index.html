@@ -62,8 +62,8 @@
           </label>
 
           <label class="field">
-            <span class="field-label">Seed <small>(optional)</small></span>
-            <input id="seed" type="text" placeholder="leave blank for random" />
+            <span class="field-label">Seed <small>(editable · shareable)</small></span>
+            <input id="seed" type="text" placeholder="random" autocomplete="off" />
           </label>
 
           <div class="field toggles">
@@ -79,10 +79,9 @@
         </div>
 
         <div class="actions">
-          <button id="generate" class="btn btn-primary" type="button">
-            ✨ Generate
-          </button>
-          <button id="copy" class="btn" type="button">📋 Copy</button>
+          <button id="shuffle" class="btn btn-primary" type="button">🎲 Shuffle</button>
+          <button id="copy" class="btn" type="button">📋 Copy text</button>
+          <button id="link" class="btn" type="button">🔗 Copy link</button>
         </div>
       </section>
 

@@ -77,6 +77,27 @@ describe('generate — html format', () => {
     expect(html.endsWith('</p>')).toBe(true);
     expect(html.match(/<p>/g)).toHaveLength(1);
   });
+
+  it('escapes HTML-unsafe characters from custom theme content', () => {
+    const sneaky: Theme = {
+      id: 'sneaky',
+      name: 'Sneaky',
+      description: 'injection attempt',
+      emoji: '🐍',
+      words: ['<script>', 'a&b', '<b>'],
+    };
+    const html = generate({ theme: sneaky, units: 'words', count: 6, format: 'html' });
+    // No raw tags or ampersands leak through…
+    expect(html).not.toMatch(/<script>/);
+    expect(html).not.toMatch(/<b>/);
+    expect(html).not.toMatch(/&(?!(amp|lt|gt);)/);
+    // …they are rendered as entities instead.
+    expect(html).toContain('&lt;script&gt;');
+    expect(html).toContain('a&amp;b');
+    // The wrapping <p> tags themselves are intact.
+    expect(html.startsWith('<p>')).toBe(true);
+    expect(html.endsWith('</p>')).toBe(true);
+  });
 });
 
 describe('generate — startWithLorem', () => {

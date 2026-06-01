@@ -90,6 +90,7 @@ export const huttese: Theme = {
   name: 'Huttese Cantina',
   description: 'Huttese’d Latin from a galaxy far, far away. Bo shuda!',
   emoji: '🐸',
+  accent: '#7d8f23',
   // Hidden Easter egg: not shown in listings. Summon it with the seed "jabba".
   hidden: true,
   defaultIntensity: 0.6,

@@ -6,6 +6,7 @@ export const corporate: Theme = {
   name: 'Corporate Synergy',
   description: 'Leverage best-in-class buzzwords to circle back on placeholder copy.',
   emoji: '📈',
+  accent: '#2563eb',
   words: [
     'synergy',
     'leverage',

@@ -5,9 +5,10 @@
 ### Lorem ipsum, but make it _iconic_.
 
 A themed placeholder-text generator with a zero-dependency TypeScript core, a
-friendly CLI, and a slick interactive web demo. Generate filler text in seven
-distinct voices — from sassy **Yass Kween** to **Corporate Synergy** to
-**Pirate Shanty**.
+friendly CLI, and a slick interactive web demo — **"Lorem & Ipsum,"** an
+editorial _field guide to placeholder text_ built on the genuine Latin origins
+of lorem ipsum. Generate filler in **seventeen** distinct voices — from sassy
+**Yass Kween** to **Legalese**, **Gen Z**, **Cat**, and **HOA Notice**.
 
 **[▶ Live demo](https://remixmb.github.io/yass-kween-dolor-ipsum/)**
 
@@ -32,26 +33,37 @@ distinct voices — from sassy **Yass Kween** to **Corporate Synergy** to
 
 ## ✨ Highlights
 
-- **Seven hand-tuned themes** (plus one hidden 🥚), each with its own vocabulary, openers, and interjections.
+- **Seventeen hand-tuned voices** (plus one hidden 🥚), each with its own vocabulary, openers, interjections, and accent color.
 - **Blended voices** — the signature themes are _fusions_: **yassified Latin** and **huttese'd Latin**, built on Cicero's genuine lorem ipsum source and transformed word-by-word.
-- **A Latin ↔ Voice blend dial** — slide from raw, untouched Cicero Latin to maximally extra ✨ themed voice; the dial controls how far each word is transformed. (`temperature` in the API, the "Blend" slider in the demo.)
-- **Deterministic output** — pass a `seed` and get byte-for-byte reproducible text. Great for tests and shareable snippets.
-- **Three units** — `words`, `sentences`, or `paragraphs`, plus optional `text` or `html` output.
-- **Zero runtime dependencies.** The core is plain, portable TypeScript.
+- **A Latin ↔ Voice blend dial** — slide from raw, untouched Cicero Latin to maximally extra ✨ themed voice; in the demo it recolors the whole page toward each voice's accent. (`temperature` in the API, the "Blend" slider in the demo.)
+- **Per-word Cicero hover** — `generateRich()` returns tokens that carry the Latin root each blended word came from, so the demo can reveal `📜 dolorem · pain` on hover.
+- **Deterministic output** — pass a `seed` and get byte-for-byte reproducible text. Great for tests and shareable permalinks.
+- **Three units** — `words`, `sentences`, or `paragraphs`, plus optional `text` or `html` output (HTML is escaped).
+- **Zero runtime dependencies.** The core is plain, portable TypeScript; the React demo is dev-only and the published package excludes it.
 - **Works everywhere** — library (ESM + CJS), CLI, and browser. Ships full type declarations.
-- **Tested & typed** — 74 tests, ~98% coverage, strict TypeScript, ESLint + Prettier, CI.
+- **Tested & typed** — 84 tests, ~98% coverage, strict TypeScript, ESLint + Prettier, CI.
 
 ## 🎭 Themes
 
-| Theme                | id           | Vibe                                                           |
-| -------------------- | ------------ | -------------------------------------------------------------- |
-| 💅 Yass Kween        | `yass-kween` | Yassified Latin — Cicero, but make it iconic. The house voice. |
-| 📜 Classic Lorem     | `classic`    | The timeless Latin-flavored filler everyone knows.             |
-| 📈 Corporate Synergy | `corporate`  | Leverage best-in-class buzzwords to circle back on copy.       |
-| 🏴‍☠️ Pirate Shanty     | `pirate`     | Salty seafaring filler for landlubbers. Arr.                   |
-| 👾 Hacker Terminal   | `hacker`     | Cyber-thriller technobabble. We're in.                         |
-| 🚀 Startup Pitch     | `startup`    | It's like Uber, but for placeholder text.                      |
-| 🍃 Zen Garden        | `zen`        | Calm, mindful filler. Breathe in, breathe out.                 |
+| Theme                 | id           | Vibe                                                           |
+| --------------------- | ------------ | -------------------------------------------------------------- |
+| 💅 Yass Kween         | `yass-kween` | Yassified Latin — Cicero, but make it iconic. The house voice. |
+| 📜 Classic Lorem      | `classic`    | The timeless Latin-flavored filler everyone knows.             |
+| 📈 Corporate Synergy  | `corporate`  | Leverage best-in-class buzzwords to circle back on copy.       |
+| 🏴‍☠️ Pirate Shanty      | `pirate`     | Salty seafaring filler for landlubbers. Arr.                   |
+| 👾 Hacker Terminal    | `hacker`     | Cyber-thriller technobabble. We're in.                         |
+| 🚀 Startup Pitch      | `startup`    | It's like Uber, but for placeholder text.                      |
+| 🍃 Zen Garden         | `zen`        | Calm, mindful filler. Breathe in, breathe out.                 |
+| ⚖️ Legalese           | `legalese`   | Whereas the party of the first part hereby furnishes filler.   |
+| 🐈 Cat                | `cat`        | Filler dictated by a cat at 3am. The audacity.                 |
+| 🎓 Academia           | `academia`   | It could be argued that this placeholder problematizes things. |
+| 😭 Gen Z              | `genz`       | ngl this placeholder is lowkey bussin, no cap fr fr.           |
+| 📠 Boomer             | `boomer`     | Back in my day, placeholder cost a nickel. Sent from my iPad.  |
+| 🛸 Conspiracy         | `conspiracy` | Wake up, sheeple. The placeholder text is connected.           |
+| 🧀 Dutch              | `dutch`      | Doe maar gewoon — lekker placeholder, hoor. Doei!              |
+| 🎨 Artist Statement   | `artist`     | The work explores the liminal tension between filler and void. |
+| ☕ Third-Wave Barista | `barista`    | A washed Ethiopian with notes of stone fruit and acidity.      |
+| 🏡 HOA Notice         | `hoa`        | Your second courtesy notice regarding the placeholder mailbox. |
 
 ## 🚀 Quick start
 

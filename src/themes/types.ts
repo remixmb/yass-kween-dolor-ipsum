@@ -15,6 +15,12 @@ export interface Theme {
   /** An emoji used as a visual marker in the UI/CLI. */
   emoji: string;
   /**
+   * Accent color (hex) for this voice. The web demo uses it to recolor the
+   * whole page as the blend dial climbs toward the voice. Optional; defaults
+   * are handled by the UI.
+   */
+  accent?: string;
+  /**
    * When `true`, the theme is omitted from public listings (the CLI `--list`
    * and the web demo's chips). It remains fully usable when requested by id —
    * handy for Easter eggs. The Huttese theme is hidden until you summon Jabba.

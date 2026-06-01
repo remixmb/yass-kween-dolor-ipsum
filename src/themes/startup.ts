@@ -6,6 +6,7 @@ export const startup: Theme = {
   name: 'Startup Pitch',
   description: "We're disrupting placeholder text. It's like Uber, but for words.",
   emoji: '🚀',
+  accent: '#6d4aff',
   words: [
     'disrupt',
     'unicorn',

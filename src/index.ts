@@ -9,9 +9,14 @@
 export {
   generate,
   generateDetailed,
+  generateRich,
+  blocksToText,
+  blocksToHtml,
   ipsum,
   type GenerateOptions,
   type GenerateResult,
+  type RichResult,
+  type Token,
   type Unit,
   type Format,
 } from './generator.js';
@@ -27,5 +32,12 @@ export {
   type Theme,
   type ThemeId,
 } from './themes/index.js';
+
+export {
+  LATIN_GLOSS,
+  gloss,
+  LOREM_ORIGIN_WORDS,
+  LOREM_ORIGIN_STORY,
+} from './themes/origins.js';
 
 export { createRng, type RandomFn } from './rng.js';

@@ -342,6 +342,176 @@ export function generate(options: GenerateOptions = {}): string {
 }
 
 /**
+ * A single rendered token. `base` is the Cicero Latin word it derived from
+ * (blend themes only), so a UI can reveal the root and its gloss on hover;
+ * `op` marks openers/interjections, which are never glossed.
+ */
+export interface Token {
+  /** The displayed text (already styled/punctuated). */
+  t: string;
+  /** The Latin root this word came from, or `null`. */
+  base: string | null;
+  /** `true` for openers/interjections. */
+  op?: boolean;
+}
+
+/** Rich generation result: token blocks plus the derived text. */
+export interface RichResult {
+  /** Paragraph blocks, each an array of {@link Token}. */
+  blocks: Token[][];
+  /** Plain-text rendering (identical to {@link generate} for the same options). */
+  text: string;
+  /** The theme actually used (after any Easter-egg override). */
+  theme: Theme;
+  /** The resolved intensity in `[0, 1]`. */
+  intensity: number;
+  /** Whether the theme is a Latin blend (its tokens may carry `base`). */
+  isBlend: boolean;
+}
+
+function buildSentenceRich(opts: ResolvedOptions, isFirst: boolean): Token[] {
+  const { rng, theme, intensity } = opts;
+  const targetLength = intBetween(
+    rng,
+    opts.minWordsPerSentence,
+    opts.maxWordsPerSentence,
+  );
+  const tokens: Token[] = [];
+
+  let protectedCount = 0;
+  if (isFirst && opts.startWithLorem) {
+    for (const w of CLASSIC_OPENING) tokens.push({ t: w, base: null });
+    protectedCount = CLASSIC_OPENING.length;
+  }
+
+  const openerProbability = 0.1 + intensity * 0.55;
+  let opener: string | undefined;
+  if (
+    !opts.startWithLorem &&
+    theme.openers &&
+    theme.openers.length > 0 &&
+    chance(rng, openerProbability)
+  ) {
+    opener = pick(rng, theme.openers);
+  }
+
+  let previous = '';
+  while (tokens.length < targetLength) {
+    let base = sampleVocab(opts);
+    if (base === previous) base = sampleVocab(opts);
+    previous = base;
+    const styled = theme.intensify ? theme.intensify(base, intensity, rng) : base;
+    tokens.push({ t: styled, base: theme.blendBase ? base : null });
+  }
+
+  const commaStart = Math.max(1, protectedCount);
+  for (let i = commaStart; i < tokens.length - 1; i++) {
+    if (chance(rng, COMMA_PROBABILITY / Math.max(1, tokens.length / 6))) {
+      tokens[i]!.t = `${tokens[i]!.t},`;
+    }
+  }
+
+  if (opener) {
+    tokens.unshift({ t: stripTrailingPunctuation(opener), base: null, op: true });
+  }
+  if (tokens.length > 0) {
+    tokens[0] = {
+      t: capitalize(tokens[0]!.t),
+      base: tokens[0]!.base,
+      ...(tokens[0]!.op ? { op: true } : {}),
+    };
+    const last = tokens[tokens.length - 1]!;
+    last.t = `${last.t}${pickEnding(opts)}`;
+  }
+  return tokens;
+}
+
+function buildParagraphRich(opts: ResolvedOptions, isFirstParagraph: boolean): Token[] {
+  const { rng, theme, intensity } = opts;
+  const sentenceCount = intBetween(
+    rng,
+    opts.minSentencesPerParagraph,
+    opts.maxSentencesPerParagraph,
+  );
+  const interjectionProbability = intensity * 0.4;
+  const out: Token[] = [];
+  for (let i = 0; i < sentenceCount; i++) {
+    for (const tok of buildSentenceRich(opts, isFirstParagraph && i === 0)) {
+      out.push(tok);
+    }
+    if (
+      i < sentenceCount - 1 &&
+      theme.interjections &&
+      theme.interjections.length > 0 &&
+      chance(rng, interjectionProbability)
+    ) {
+      out.push({ t: pick(rng, theme.interjections), base: null, op: true });
+    }
+  }
+  return out;
+}
+
+function buildWordsRich(opts: ResolvedOptions): Token[] {
+  const { rng, theme, intensity } = opts;
+  const tokens: Token[] = [];
+  if (opts.startWithLorem) {
+    for (const w of CLASSIC_OPENING) tokens.push({ t: w, base: null });
+  }
+  while (tokens.length < opts.count) {
+    const base = sampleVocab(opts);
+    tokens.push({
+      t: theme.intensify ? theme.intensify(base, intensity, rng) : base,
+      base: theme.blendBase ? base : null,
+    });
+  }
+  return tokens.slice(0, opts.count);
+}
+
+/** Render token blocks to plain text (identical to the string builders). */
+export function blocksToText(blocks: Token[][]): string {
+  return blocks.map((p) => p.map((t) => t.t).join(' ')).join('\n\n');
+}
+
+/** Render token blocks to HTML-escaped `<p>` paragraphs. */
+export function blocksToHtml(blocks: Token[][]): string {
+  return blocks
+    .map((p) => `<p>${escapeHtml(p.map((t) => t.t).join(' '))}</p>`)
+    .join('\n');
+}
+
+/**
+ * Generate themed placeholder text as structured tokens. Each token carries the
+ * Cicero `base` it derived from (for blend themes), enabling per-word "reveal
+ * the Latin root" hover in a UI. Plain text and HTML are derived from the same
+ * tokens, so a copied result matches exactly what is shown.
+ */
+export function generateRich(options: GenerateOptions = {}): RichResult {
+  const opts = resolveOptions(options);
+  let blocks: Token[][];
+  if (opts.units === 'words') {
+    blocks = [buildWordsRich(opts)];
+  } else if (opts.units === 'sentences') {
+    const all: Token[] = [];
+    for (let i = 0; i < opts.count; i++) {
+      for (const tok of buildSentenceRich(opts, i === 0)) all.push(tok);
+    }
+    blocks = [all];
+  } else {
+    blocks = [];
+    for (let i = 0; i < opts.count; i++) {
+      blocks.push(buildParagraphRich(opts, i === 0));
+    }
+  }
+  return {
+    blocks,
+    text: blocksToText(blocks),
+    theme: opts.theme,
+    intensity: opts.intensity,
+    isBlend: Boolean(opts.theme.blendBase),
+  };
+}
+
+/**
  * Convenience helpers mirroring popular ipsum APIs.
  */
 export const ipsum = {

@@ -6,6 +6,7 @@ export const hacker: Theme = {
   name: 'Hacker Terminal',
   description: 'Cyber-thriller technobabble. We need to bypass the mainframe.',
   emoji: '👾',
+  accent: '#16a34a',
   words: [
     'mainframe',
     'firewall',

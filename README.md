@@ -34,7 +34,7 @@ distinct voices — from sassy **Yass Kween** to **Corporate Synergy** to
 
 - **Seven hand-tuned themes** (plus one hidden 🥚), each with its own vocabulary, openers, and interjections.
 - **Blended voices** — the signature themes are _fusions_: **yassified Latin** and **huttese'd Latin**, built on Cicero's genuine lorem ipsum source and transformed word-by-word.
-- **A temperature dial** — run it _cold_ for raw, untouched Latin or _hot_ for maximally extra ✨. The dial controls how far each word is transformed.
+- **A Latin ↔ Voice blend dial** — slide from raw, untouched Cicero Latin to maximally extra ✨ themed voice; the dial controls how far each word is transformed. (`temperature` in the API, the "Blend" slider in the demo.)
 - **Deterministic output** — pass a `seed` and get byte-for-byte reproducible text. Great for tests and shareable snippets.
 - **Three units** — `words`, `sentences`, or `paragraphs`, plus optional `text` or `html` output.
 - **Zero runtime dependencies.** The core is plain, portable TypeScript.
@@ -108,7 +108,8 @@ The signature themes are _blends_: every word starts as genuine Cicero Latin
 and is fused toward the voice, scaled by a **temperature** dial (`0`–`1`). Run
 it **cold** and the raw Latin shows through. Run it **hot** and the voice takes
 over — Yass Kween elongates, SHOUTs, ✨sparkles✨, and swaps in sass. Use
-`intensity` or its alias `temperature` — both drive the same dial.
+`intensity` or its alias `temperature` — both drive the same dial. (In the web
+demo this is the **Blend** slider, labeled 📜 Latin ↔ the chosen voice.)
 
 ```ts
 // ❄️ Cold (0°): the genuine lorem ipsum source resurfaces, untouched:

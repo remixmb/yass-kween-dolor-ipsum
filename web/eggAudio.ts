@@ -168,16 +168,48 @@ function ride(start: number, peak: number): void {
   src.stop(start + 0.06);
 }
 
+/** A gruff, low tuba/trombone "honk" — Dixieland oom meets Hutt belch. */
+function honk(start: number): void {
+  if (!ctx || !master) return;
+  const osc = ctx.createOscillator();
+  const lp = ctx.createBiquadFilter();
+  const gain = ctx.createGain();
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(62, start);
+  osc.frequency.exponentialRampToValueAtTime(46, start + 0.18);
+  lp.type = 'lowpass';
+  lp.frequency.value = 240;
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.exponentialRampToValueAtTime(0.42, start + 0.03);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.28);
+  osc.connect(lp).connect(gain).connect(master);
+  osc.start(start);
+  osc.stop(start + 0.3);
+}
+
+/** A clarinet trill — a quick shake between a note and its whole-step neighbor. */
+function trill(freq: number, start: number, dur: number, peak: number): void {
+  const segments = 6;
+  const seg = dur / segments;
+  const up = freq * Math.pow(2, 2 / 12);
+  for (let k = 0; k < segments; k++) {
+    lead(k % 2 === 0 ? freq : up, start + k * seg, seg * 1.15, peak);
+  }
+}
+
 // An ORIGINAL bluesy-swing tune over a I–IV–I–V loop (C7 · F7 · C7 · G7) — the
 // cantina band's idiom, not its melody. 32 swung eighth-notes = 4 bars; even
 // steps land on the beat, odd steps are the swung up-beat. `null` is a rest.
 const LEAD: (number | null)[] = [
-  76, 79, null, 76, 72, null, 75, 76, // C7
-  77, 81, null, 77, 75, 72, null, 74, // F7
-  79, null, 81, 79, 76, null, 72, 75, // C7
-  74, 77, 79, null, 71, 74, 77, null, // G7
+  76, null, 79, 76, null, 75, 76, null, // C7  — the hook
+  77, null, 81, 77, null, 75, 77, null, // F7  — the same hook, up a fourth
+  79, 81, 84, 81, 79, null, 76, 75, // C7  — climb to the peak, bluesy fall
+  74, 77, 79, 77, 74, 71, null, null, // G7  — turnaround, home to C
 ];
-const SCOOP = new Set([0, 4, 8, 12, 16, 24]); // lead notes that scoop up
+// Dixieland clarinet ornaments: grace pickups, scoops, and a trill on the peak.
+const GRACE = new Set([0, 8]); // quick lower-neighbor pickup into the hook
+const SCOOP = new Set([16, 24]); // scoop up into the second-half phrases
+const TRILL = new Set([18]); // a little shake on the high note
 // A walking upright bass: one quarter note per beat (the even steps).
 const BASS: (number | null)[] = [
   36, null, 38, null, 40, null, 43, null,
@@ -193,19 +225,23 @@ const COMP: number[][] = [
   [71, 77], // G7 — B, F
 ];
 
-const BEAT = 0.32; // ~187 bpm, bouncy
-const SWING = 0.64; // the on-beat eighth takes 64% of the beat (triplet-ish)
+const BEAT = 0.3; // ~200 bpm — a frantic cantina bounce
+const SWING = 0.66; // a true triplet shuffle — the on-beat eighth holds two-thirds
 
 function scheduleStep(i: number, when: number): void {
   const note = LEAD[i];
   if (note != null) {
-    lead(mtof(note), when, BEAT * (i % 2 === 0 ? 0.5 : 0.32), 0.4, SCOOP.has(i));
+    if (GRACE.has(i)) lead(mtof(note - 2), when - 0.05, 0.06, 0.26); // grace pickup
+    if (TRILL.has(i)) trill(mtof(note), when, BEAT * 0.5, 0.36);
+    else lead(mtof(note), when, BEAT * (i % 2 === 0 ? 0.5 : 0.32), 0.4, SCOOP.has(i));
   }
   const b = BASS[i];
   if (b != null) bass(mtof(b), when, BEAT * 0.9, 0.5);
   const bar = Math.floor(i / 8) % 4;
   // Comp stabs on the "and" of beats 2 & 4.
   if (i % 4 === 3) comp(COMP[bar]!.map(mtof), when, 0.14);
+  // A gruff low honk opens each half-phrase — Dixieland tuba meets Hutt belch.
+  if (i === 0 || i === 16) honk(when);
   // Brushed kit: feathered kick on beats 1 & 3, brush on 2 & 4, swing ride.
   if (i % 8 === 0 || i % 8 === 4) kick(when, 0.42);
   if (i % 8 === 2 || i % 8 === 6) brush(when, 0.26);

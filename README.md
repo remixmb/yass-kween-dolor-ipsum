@@ -39,13 +39,14 @@ of lorem ipsum. Generate filler in **twenty-seven** distinct voices — from sas
 - **Blended voices** — the signature themes are _fusions_: **yassified Latin** and **huttese'd Latin**, built on Cicero's genuine lorem ipsum source and transformed word-by-word.
 - **A Latin ↔ Voice blend dial** — slide from raw, untouched Cicero Latin to maximally extra ✨ themed voice; in the demo it recolors the whole page toward each voice's accent. (`temperature` in the API, the "Blend" slider in the demo.)
 - **Per-word glosses, both ways** — `generateRich()` returns tokens carrying the Latin root behind each blended word (`📜 dolorem · pain`), and the plain-spoken voices ship a **jargon glossary**, so the demo decodes buzzwords too (`💡 synergy · combined output, allegedly greater than the sum`).
-- **Clone a voice from any text** — `voiceFromText()` derives a voice (distinctive vocabulary, sentence openers, cadence) from a sample of prose, so you can generate placeholder that sounds like _your_ content. Paste a README, a tweet thread, or your group chat. The demo exposes it as **"load your own voice."**
+- **Clone a voice from any text** — `voiceFromText()` derives a voice (distinctive vocabulary, sentence openers, cadence) from a sample of prose, so you can generate placeholder that sounds like _your_ content. Paste a README, a tweet thread, or your group chat. The demo exposes it as **"load your own voice."** In the terminal: `cat README.md | yass-ipsum --voiceprint`.
+- **Ipsumize the entire web** — drag the demo's bookmarklet to your bookmarks bar, then click it on _any_ website to rewrite all of its text in any voice, live, with a floating panel to switch voices or restore.
 - **An editorial web playground** — a 17-voice keyboard radiogroup, a blend dial that recolors the whole page, a **compare gallery** across every voice at one seed, a **recent-rolls** history, **`.txt` / `.json` export**, and shareable permalinks.
 - **Deterministic output** — pass a `seed` and get byte-for-byte reproducible text. Great for tests and shareable permalinks.
 - **Four units** — `words`, `sentences`, `paragraphs`, or `characters` (trimmed to a word boundary), plus optional `text` or `html` output (HTML is escaped).
 - **Zero runtime dependencies.** The core is plain, portable TypeScript; the React demo is dev-only and the published package excludes it.
 - **Works everywhere** — library (ESM + CJS), CLI, and browser. Ships full type declarations.
-- **Tested & typed** — 149 tests, ~98% line coverage, strict TypeScript, ESLint + Prettier, CI.
+- **Tested & typed** — 151 tests, ~98% line coverage, strict TypeScript, ESLint + Prettier, CI.
 
 ## 🎭 Themes
 

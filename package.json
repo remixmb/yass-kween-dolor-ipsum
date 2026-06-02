@@ -1,6 +1,6 @@
 {
   "name": "yass-kween-dolor-ipsum",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "A themed placeholder-text generator. Lorem ipsum, but make it iconic — sassy, corporate, pirate, hacker, and more.",
   "type": "module",
   "sideEffects": false,
@@ -52,7 +52,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "vite",
-    "build:web": "vite build",
+    "build:web": "vite build && vite build --config vite.bookmarklet.config.ts",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",

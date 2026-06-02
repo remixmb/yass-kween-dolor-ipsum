@@ -27,6 +27,9 @@ import {
 import { enterCantina, leaveCantina } from './eggAudio';
 
 const VIDEO_URL = 'https://www.youtube.com/watch?v=kL1PDqzqhM4';
+// The hosted "Ipsumize the web" payload + the bookmarklet that injects it.
+const IPSUMIZE_SRC = 'https://remixmb.github.io/yass-kween-dolor-ipsum/ipsumize.js';
+const BOOKMARKLET = `javascript:(function(){var s=document.createElement('script');s.src='${IPSUMIZE_SRC}';document.body.appendChild(s);})();`;
 const COUNT_DEFAULTS: Record<Unit, number> = {
   paragraphs: 3,
   sentences: 5,
@@ -527,6 +530,13 @@ export function App() {
   const lastRecorded = useRef<string>('');
   const primaryRef = useRef<HTMLButtonElement>(null);
   const shuffleRef = useRef<HTMLButtonElement>(null);
+  const bookmarkletRef = useRef<HTMLAnchorElement>(null);
+
+  // React strips `javascript:` hrefs, so set the bookmarklet's href imperatively
+  // (it's meant to be dragged to the bookmarks bar, not navigated to).
+  useEffect(() => {
+    bookmarkletRef.current?.setAttribute('href', BOOKMARKLET);
+  }, []);
 
   const html = view === 'html';
   const pride = PRIDE_SEEDS.test(seed.trim());
@@ -1610,6 +1620,29 @@ export function App() {
               </div>
             </>
           )}
+        </section>
+
+        <section className="ipsumize-cta" aria-label="Ipsumize the web">
+          <p className="sec-label">
+            <span className="n">07</span> Ipsumize the web
+          </p>
+          <p className="ipsumize-blurb">
+            Drag{' '}
+            <a ref={bookmarkletRef} className="bookmarklet" href="#about:blank">
+              🪄 Ipsumize
+            </a>{' '}
+            to your bookmarks bar, then click it on <em>any</em> website to
+            rewrite all of its text in any of these voices — live, with a panel
+            to switch voices or restore. Or{' '}
+            <button
+              type="button"
+              className="linklike"
+              onClick={() => copy(BOOKMARKLET, 'Bookmarklet copied ✨')}
+            >
+              copy the bookmarklet
+            </button>
+            .
+          </p>
         </section>
 
         <footer className="footer">

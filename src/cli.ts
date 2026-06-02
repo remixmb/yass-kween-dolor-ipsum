@@ -6,15 +6,18 @@
  *   yass-ipsum [options]
  *   yass-ipsum --theme pirate --paragraphs 2 --seed ahoy
  */
+import { readFileSync } from 'node:fs';
 import { generate, type GenerateOptions, type Unit } from './generator.js';
 import {
   visibleThemes,
   listThemeIds,
   getTheme,
+  withLatinBlend,
   DEFAULT_THEME_ID,
 } from './themes/index.js';
+import { voiceFromText } from './voiceprint.js';
 
-const VERSION = '1.4.0';
+const VERSION = '1.5.0';
 
 interface ParsedArgs {
   options: GenerateOptions;
@@ -22,6 +25,9 @@ interface ParsedArgs {
   showVersion: boolean;
   listThemes: boolean;
   showLore: boolean;
+  /** Clone a voice from sample text (a file path, or stdin when omitted). */
+  voiceprint: boolean;
+  voiceprintSource?: string;
   error?: string;
 }
 
@@ -47,6 +53,8 @@ OPTIONS
       --lorem             Start with the classic "Lorem ipsum dolor sit amet"
       --no-emoji          Omit decorative emoji (e.g. Yass Kween's sparkles)
       --lore              Show the chosen theme's origin story and exit
+      --voiceprint [file] Clone a voice from a text file (or piped stdin) and
+                          generate in it. Overrides --theme.
   -l, --list              List available themes and exit
   -h, --help              Show this help and exit
   -v, --version           Show version and exit
@@ -59,6 +67,8 @@ EXAMPLES
   yass-ipsum --temperature 0.1        # cold — raw Latin resurfaces
   yass-ipsum --temp 100 -p 1          # hot — maximum yassification
   yass-ipsum --no-emoji -p 1          # clean placeholder text, no sparkles
+  cat README.md | yass-ipsum --voiceprint -p 1   # ipsum in your file's voice
+  yass-ipsum --voiceprint notes.txt -s 3
   yass-ipsum --lore
   yass-ipsum --list
 `;
@@ -70,6 +80,7 @@ function parseArgs(argv: string[]): ParsedArgs {
     showVersion: false,
     listThemes: false,
     showLore: false,
+    voiceprint: false,
   };
 
   const next = (i: number, flag: string): string => {
@@ -173,6 +184,16 @@ function parseArgs(argv: string[]): ParsedArgs {
         case '--lore':
           result.showLore = true;
           break;
+        case '--voiceprint': {
+          result.voiceprint = true;
+          // Optional file argument; without one, read from stdin.
+          const v = argv[i + 1];
+          if (v !== undefined && !v.startsWith('-')) {
+            result.voiceprintSource = v;
+            i++;
+          }
+          break;
+        }
         default:
           throw new Error(`Unknown option "${arg}". Try --help.`);
       }
@@ -229,6 +250,34 @@ export function run(argv: string[]): number {
       `${theme.emoji}  ${theme.name} — origins\n\n${theme.origin}\n`,
     );
     return 0;
+  }
+
+  if (parsed.voiceprint) {
+    let sample: string;
+    try {
+      if (parsed.voiceprintSource) {
+        sample = readFileSync(parsed.voiceprintSource, 'utf8');
+      } else if (process.stdin.isTTY) {
+        process.stderr.write(
+          'Error: --voiceprint needs text. Pass a file, or pipe it: ' +
+            '`cat notes.txt | yass-ipsum --voiceprint`.\n',
+        );
+        return 1;
+      } else {
+        sample = readFileSync(0, 'utf8'); // fd 0 = stdin
+      }
+    } catch (err) {
+      const where = parsed.voiceprintSource ?? 'stdin';
+      process.stderr.write(`Error: could not read ${where}: ${(err as Error).message}\n`);
+      return 1;
+    }
+    try {
+      // Clone a voice from the text; blend it so --temperature still applies.
+      parsed.options.theme = withLatinBlend(voiceFromText(sample));
+    } catch (err) {
+      process.stderr.write(`Error: ${(err as Error).message}\n`);
+      return 1;
+    }
   }
 
   try {

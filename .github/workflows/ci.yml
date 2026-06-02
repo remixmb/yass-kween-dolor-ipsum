@@ -61,7 +61,7 @@ jobs:
       # Upload the built demo so it can be downloaded and previewed from the
       # run summary (handy for reviewing PRs before they reach the live site).
       - name: Upload web demo preview
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: web-demo-${{ github.sha }}
           path: dist-web

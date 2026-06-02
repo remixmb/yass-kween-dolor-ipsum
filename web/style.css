@@ -1774,6 +1774,15 @@ summary:focus-visible,
 
 /* ---------- mobile ---------- */
 @media (max-width: 680px) {
+  /* Compact the whole vertical rhythm on phones. Touch targets stay comfortable
+     via the fixed paddings in the pointer:coarse block below. */
+  #app {
+    --u: 0.82;
+  }
+  .dek {
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
   .page {
     padding: calc(26px * var(--u)) 16px calc(44px * var(--u));
   }

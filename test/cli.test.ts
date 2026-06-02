@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { run } from '../src/cli.js';
+import { run, isDirectInvocation } from '../src/cli.js';
 
 /** Capture stdout/stderr writes produced while running the CLI. */
 function captureRun(argv: string[]): { code: number; out: string; err: string } {
@@ -39,6 +39,27 @@ describe('cli', () => {
     expect(code).toBe(0);
     expect(out).toContain('USAGE');
     expect(out).toContain('--theme');
+  });
+
+  // Regression: v1.0.0 silently no-opped when run via the installed bin, because
+  // the entry-point check only recognized the file name `cli`, not the bin name.
+  describe('isDirectInvocation', () => {
+    it('matches the source/dist entry files', () => {
+      expect(isDirectInvocation('/app/dist/cli.js')).toBe(true);
+      expect(isDirectInvocation('/app/dist/cli.cjs')).toBe(true);
+      expect(isDirectInvocation('/app/src/cli.ts')).toBe(true);
+    });
+
+    it('matches the installed bin symlink (the regression)', () => {
+      expect(isDirectInvocation('/proj/node_modules/.bin/yass-ipsum')).toBe(true);
+      expect(isDirectInvocation('/usr/local/bin/yass-ipsum')).toBe(true);
+    });
+
+    it('does not fire for unrelated entries or when imported', () => {
+      expect(isDirectInvocation(undefined)).toBe(false);
+      expect(isDirectInvocation('/app/dist/mcp.js')).toBe(false);
+      expect(isDirectInvocation('/proj/node_modules/.bin/vitest')).toBe(false);
+    });
   });
 
   it('prints version and exits 0', () => {

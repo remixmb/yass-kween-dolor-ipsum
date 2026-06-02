@@ -1,4 +1,4 @@
-import type { Theme } from './types.js';
+import type { Theme, IntensifyContext } from './types.js';
 import { type RandomFn, chance, intBetween, pick } from '../rng.js';
 import { LOREM_ORIGIN_WORDS, LOREM_ORIGIN_STORY } from './origins.js';
 
@@ -71,7 +71,12 @@ const SASS = [
  * sparkled. At intensity 0 the Latin passes through untouched, so lowering the
  * dial reveals Cicero underneath the glam. Never introduces whitespace.
  */
-function yassify(word: string, intensity: number, rng: RandomFn): string {
+function yassify(
+  word: string,
+  intensity: number,
+  rng: RandomFn,
+  ctx: IntensifyContext,
+): string {
   // Blend: sometimes swap the Latin root for full sass, more often as the dial
   // climbs — the rest stays Latin, yielding yassified Latin.
   let w = chance(rng, intensity * 0.5) ? pick(rng, SASS) : word;
@@ -89,9 +94,11 @@ function yassify(word: string, intensity: number, rng: RandomFn): string {
     w = w.toUpperCase();
   }
 
-  // Sprinkle sparkle, scaled by intensity.
+  // Sprinkle sparkle, scaled by intensity. Draw from the RNG either way so that
+  // disabling emoji removes only the glyph and never shifts the word stream.
   if (chance(rng, intensity * 0.16)) {
-    w += pick(rng, SPARKLES);
+    const sparkle = pick(rng, SPARKLES);
+    if (ctx.emoji) w += sparkle;
   }
 
   return w;

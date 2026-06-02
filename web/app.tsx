@@ -38,22 +38,34 @@ const UNIT_SHORT: Record<Unit, string> = {
 };
 
 /* ---------- appearance tweaks (persisted) ---------- */
-type Surface = 'slate' | 'paper' | 'aurora';
+type Surface = 'auto' | 'slate' | 'paper' | 'aurora';
 type Face = 'spectral' | 'garamond' | 'newsreader';
 type Density = 'compact' | 'regular' | 'spacious';
+type PlainScheme = 'auto' | 'light' | 'dark';
+const SCHEME_CYCLE: Record<PlainScheme, PlainScheme> = {
+  auto: 'light',
+  light: 'dark',
+  dark: 'auto',
+};
 interface Tweaks {
   surface: Surface;
   face: Face;
   density: Density;
   tint: boolean;
+  /** Bare-bones, high-contrast dev view: system font, no decoration. */
+  plain: boolean;
+  /** Plain view color scheme: follow the OS ('auto'), or force light/dark. */
+  plainScheme: PlainScheme;
 }
 const DEFAULT_TWEAKS: Tweaks = {
-  surface: 'slate',
+  surface: 'auto',
   face: 'spectral',
   density: 'regular',
   tint: true,
+  plain: false,
+  plainScheme: 'auto',
 };
-const SURFACES: Surface[] = ['slate', 'paper', 'aurora'];
+const SURFACES: Surface[] = ['auto', 'slate', 'paper', 'aurora'];
 const FACES: Face[] = ['spectral', 'garamond', 'newsreader'];
 const DENSITIES: Density[] = ['compact', 'regular', 'spacious'];
 
@@ -66,6 +78,7 @@ interface Roll {
   count: number;
   seed: string;
   lorem: boolean;
+  emoji: boolean;
 }
 const RECENT_KEY = 'li:recent';
 const TWEAKS_KEY = 'li:tweaks';
@@ -100,7 +113,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 function rollKey(r: Omit<Roll, 'key'>): string {
-  return [r.themeId, r.blend, r.unit, r.count, r.seed, r.lorem ? 1 : 0].join('|');
+  return [r.themeId, r.blend, r.unit, r.count, r.seed, r.lorem ? 1 : 0, r.emoji ? 1 : 0].join('|');
 }
 
 function readStore<T>(key: string, fallback: T): T {
@@ -119,6 +132,24 @@ function writeStore(key: string, value: unknown): void {
   }
 }
 
+/** The OS color-scheme preference, used as the plain view's first default. */
+function prefersDark(): boolean {
+  return (
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-color-scheme: dark)').matches
+  );
+}
+
+/** Whether the OS asks for reduced motion — also used to keep the egg silent. */
+function prefersReducedMotion(): boolean {
+  return (
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
+}
+
 function loadTweaks(): Tweaks {
   const t = readStore<Partial<Tweaks>>(TWEAKS_KEY, {});
   return {
@@ -128,6 +159,9 @@ function loadTweaks(): Tweaks {
     density:
       t.density && DENSITIES.includes(t.density) ? t.density : DEFAULT_TWEAKS.density,
     tint: t.tint !== false,
+    plain: t.plain === true,
+    plainScheme:
+      t.plainScheme === 'light' || t.plainScheme === 'dark' ? t.plainScheme : 'auto',
   };
 }
 
@@ -149,6 +183,7 @@ function loadRecent(): Roll[] {
       count: Math.max(1, Math.floor(Number(v.count)) || 1),
       seed: v.seed,
       lorem: Boolean(v.lorem),
+      emoji: Boolean(v.emoji),
     };
     out.push({ key: rollKey(roll), ...roll });
     if (out.length >= RECENT_MAX) break;
@@ -197,13 +232,16 @@ function bareWord(text: string): string {
  */
 function tipFor(tok: Token, theme: Theme, isBlend: boolean): string | null {
   if (tok.op) return null;
-  if (isBlend) {
-    if (!tok.base) return null;
+  // A voice word that carries a jargon gloss explains itself first — this keeps
+  // the decode-the-jargon hover working for the blended jargon voices (e.g.
+  // corporate "synergy"), where the word sits on top of a Latin root.
+  const jargon = themeGloss(theme, tok.t);
+  if (jargon) return `💡 ${bareWord(tok.t)}  ·  ${jargon}`;
+  if (isBlend && tok.base) {
     const en = gloss(tok.base);
     return `📜 ${tok.base}${en ? `  ·  ${en}` : ''}`;
   }
-  const en = themeGloss(theme, tok.t);
-  return en ? `💡 ${bareWord(tok.t)}  ·  ${en}` : null;
+  return null;
 }
 
 function renderTokens(
@@ -236,6 +274,7 @@ interface InitialState {
   count: number;
   seed: string;
   lorem: boolean;
+  emoji: boolean;
   html: boolean;
   hutteseRevealed: boolean;
 }
@@ -266,59 +305,75 @@ function initialState(): InitialState {
     count,
     seed,
     lorem: p.get('lorem') === '1',
+    emoji: p.get('emoji') === '1',
     html: p.get('html') === '1',
     hutteseRevealed: jabba || getTheme(themeId)?.hidden === true,
   };
 }
 
-/** An original, stylized Hutt — no copyrighted artwork, just shapes. */
+/** An original, stylized Hutt — no copyrighted artwork, just shapes: a fat
+ *  slug-lord with hooded eyes and a wide sneer. Breathes and blinks at rest. */
 function JabbaHutt() {
   return (
-    <svg className="hutt" viewBox="0 0 220 170" role="img" aria-label="A Hutt awakens">
+    <svg className="hutt" viewBox="0 0 240 212" role="img" aria-label="A Hutt awakens">
       <defs>
-        <radialGradient id="huttBody" cx="44%" cy="32%" r="78%">
-          <stop offset="0%" stopColor="#cdb87a" />
-          <stop offset="55%" stopColor="#9a9a52" />
-          <stop offset="100%" stopColor="#5f6b34" />
+        <linearGradient id="huttBody" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#cdb56e" />
+          <stop offset="48%" stopColor="#9f9043" />
+          <stop offset="100%" stopColor="#5b5226" />
+        </linearGradient>
+        <radialGradient id="huttSheen" cx="38%" cy="26%" r="44%">
+          <stop offset="0%" stopColor="#fff3cf" stopOpacity="0.5" />
+          <stop offset="100%" stopColor="#fff3cf" stopOpacity="0" />
         </radialGradient>
       </defs>
-      <path
-        className="hutt-body"
-        d="M110 20 C58 20 24 58 24 104 C24 148 64 164 110 164 C156 164 196 148 196 104 C196 58 162 20 110 20 Z"
-        fill="url(#huttBody)"
-        stroke="#3f4a22"
-        strokeWidth="3"
-      />
-      <ellipse cx="110" cy="122" rx="64" ry="34" fill="#c9b988" opacity="0.45" />
-      <g className="hutt-eyes">
-        <ellipse
-          cx="84"
-          cy="74"
-          rx="17"
-          ry="13"
-          fill="#e9d49a"
+      <g className="hutt-body">
+        {/* the slug mound */}
+        <path
+          d="M120 26 C92 26 70 44 66 74 C46 96 30 132 38 164 C46 192 84 202 120 202 C156 202 194 192 202 164 C210 132 194 96 174 74 C170 44 148 26 120 26 Z"
+          fill="url(#huttBody)"
           stroke="#3f4a22"
-          strokeWidth="2.5"
+          strokeWidth="3"
         />
-        <ellipse
-          cx="136"
-          cy="74"
-          rx="17"
-          ry="13"
-          fill="#e9d49a"
-          stroke="#3f4a22"
-          strokeWidth="2.5"
+        {/* pale underbelly + fat folds */}
+        <ellipse cx="120" cy="156" rx="76" ry="46" fill="#d8c489" opacity="0.5" />
+        <path d="M58 140 Q120 160 182 140" stroke="#7c7032" strokeWidth="2.5" fill="none" opacity="0.4" />
+        <path d="M66 170 Q120 188 174 170" stroke="#7c7032" strokeWidth="2.5" fill="none" opacity="0.32" />
+        {/* slimy sheen */}
+        <ellipse cx="98" cy="62" rx="58" ry="42" fill="url(#huttSheen)" />
+        {/* eyes: small, hooded, half-lidded for a scheming glare */}
+        <g className="hutt-eyes">
+          <ellipse cx="96" cy="102" rx="15" ry="12" fill="#e7d68f" stroke="#4a4220" strokeWidth="2" />
+          <ellipse cx="144" cy="102" rx="15" ry="12" fill="#e7d68f" stroke="#4a4220" strokeWidth="2" />
+          <ellipse cx="97" cy="103" rx="5.5" ry="8" fill="#23180a" />
+          <ellipse cx="143" cy="103" rx="5.5" ry="8" fill="#23180a" />
+          <circle cx="93" cy="99" r="1.8" fill="#fffaf0" opacity="0.6" />
+          <circle cx="139" cy="99" r="1.8" fill="#fffaf0" opacity="0.6" />
+          {/* heavy lids drooping over the top half */}
+          <path d="M80 102 Q96 86 112 102 Q96 100 80 102 Z" fill="url(#huttBody)" />
+          <path d="M128 102 Q144 86 160 102 Q144 100 128 102 Z" fill="url(#huttBody)" />
+          <path d="M81 100 Q96 92 111 100" stroke="#4a4220" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+          <path d="M129 100 Q144 92 159 100" stroke="#4a4220" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+        </g>
+        {/* heavy angled brow ridges + a frown crease */}
+        <path d="M73 90 Q96 80 117 89" stroke="#544a22" strokeWidth="9" fill="none" strokeLinecap="round" />
+        <path d="M123 89 Q144 80 167 90" stroke="#544a22" strokeWidth="9" fill="none" strokeLinecap="round" />
+        <path d="M119 83 Q121 92 120 99" stroke="#4a4220" strokeWidth="3" fill="none" strokeLinecap="round" opacity="0.7" />
+        {/* nostrils */}
+        <ellipse cx="111" cy="128" rx="3" ry="5" fill="#3a3115" transform="rotate(-16 111 128)" />
+        <ellipse cx="129" cy="128" rx="3" ry="5" fill="#3a3115" transform="rotate(16 129 128)" />
+        {/* jutting lower lip / jowl */}
+        <path d="M64 162 Q120 154 176 162 Q174 192 120 196 Q66 192 64 162 Z" fill="#b18a55" opacity="0.92" />
+        {/* wide down-turned maw — the sneer */}
+        <path
+          className="hutt-mouth"
+          d="M74 161 Q120 146 166 161 Q120 156 74 161 Z"
+          fill="#23170b"
         />
-        <ellipse cx="84" cy="76" rx="4.5" ry="8" fill="#2a2410" />
-        <ellipse cx="136" cy="76" rx="4.5" ry="8" fill="#2a2410" />
+        {/* drooping corner creases */}
+        <path d="M71 156 Q66 165 73 171" stroke="#5c4a2c" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.6" />
+        <path d="M169 156 Q174 165 167 171" stroke="#5c4a2c" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.6" />
       </g>
-      <ellipse cx="100" cy="105" rx="5" ry="4" fill="#4a3f22" />
-      <ellipse cx="120" cy="105" rx="5" ry="4" fill="#4a3f22" />
-      <path
-        className="hutt-mouth"
-        d="M68 124 Q110 152 152 124 Q110 140 68 124 Z"
-        fill="#3a2a16"
-      />
     </svg>
   );
 }
@@ -331,19 +386,23 @@ export function App() {
   const [count, setCount] = useState(init.count);
   const [seed, setSeed] = useState(init.seed);
   const [lorem, setLorem] = useState(init.lorem);
+  const [emoji, setEmoji] = useState(init.emoji);
   const [view, setView] = useState<'text' | 'html'>(init.html ? 'html' : 'text');
   const [hutteseRevealed, setHutteseRevealed] = useState(init.hutteseRevealed);
   const [tweaks, setTweaks] = useState<Tweaks>(loadTweaks);
+  const [systemDark, setSystemDark] = useState(prefersDark);
   const [recent, setRecent] = useState<Roll[]>(loadRecent);
   const [compareOpen, setCompareOpen] = useState(false);
   const [devPanel, setDevPanel] = useState(() => readStore<boolean>(DEV_KEY, false));
   const [toast, setToast] = useState('');
+  const [copiedId, setCopiedId] = useState('');
   const [eggBurst, setEggBurst] = useState(false);
   const [prideBurst, setPrideBurst] = useState(false);
   const [installEvt, setInstallEvt] = useState<BeforeInstallPromptEvent | null>(null);
   const [genId, setGenId] = useState(0);
 
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const copiedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prideFired = useRef(false);
   const devRef = useRef(devPanel);
@@ -363,8 +422,9 @@ export function App() {
         seed,
         intensity: blend / 100,
         startWithLorem: lorem,
+        emoji,
       }),
-    [themeId, unit, count, seed, blend, lorem],
+    [themeId, unit, count, seed, blend, lorem, emoji],
   );
   const displayTheme = result.theme;
   const isBlend = result.isBlend;
@@ -384,6 +444,7 @@ export function App() {
     count,
     seed,
     lorem,
+    emoji,
   });
 
   const chipThemes = useMemo(
@@ -422,12 +483,27 @@ export function App() {
     p.set('seed', seed);
     if (html) p.set('html', '1');
     if (lorem) p.set('lorem', '1');
+    if (emoji) p.set('emoji', '1');
     window.history.replaceState(null, '', `?${p.toString()}`);
-  }, [displayTheme, unit, count, blend, seed, html, lorem]);
+  }, [displayTheme, unit, count, blend, seed, html, lorem, emoji]);
 
   // Persist appearance tweaks and recent rolls.
   useEffect(() => writeStore(TWEAKS_KEY, tweaks), [tweaks]);
-  useEffect(() => writeStore(RECENT_KEY, recent), [recent]);
+  // Don't persist the hidden Huttese egg into saved history — keep it a secret
+  // that re-hides next session (a shared ?seed=jabba link still summons it).
+  useEffect(
+    () => writeStore(RECENT_KEY, recent.filter((r) => !getTheme(r.themeId)?.hidden)),
+    [recent],
+  );
+
+  // Follow the OS color scheme live while the plain view is on "auto".
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const onChange = () => setSystemDark(mq.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
 
   // Record a "roll" once the current result settles, deduped by signature. The
   // debounce keeps slider drags from flooding history with intermediate values.
@@ -443,13 +519,14 @@ export function App() {
         count,
         seed,
         lorem,
+        emoji,
       };
       setRecent((prev) =>
         [entry, ...prev.filter((r) => r.key !== currentKey)].slice(0, RECENT_MAX),
       );
     }, 700);
     return () => clearTimeout(id);
-  }, [currentKey, displayTheme.id, blend, unit, count, seed, lorem]);
+  }, [currentKey, displayTheme.id, blend, unit, count, seed, lorem, emoji]);
 
   // Persist the (secret) developer Appearance panel unlock.
   useEffect(() => {
@@ -473,7 +550,9 @@ export function App() {
   // The cantina audio rides with the Huttese overlay: a live-synthesized 8-bit
   // loop and Jabba's laugh (no audio files), faded out when it closes.
   useEffect(() => {
-    if (eggBurst) enterCantina();
+    // Treat reduced-motion as a "calm, please" signal: the egg still appears,
+    // but stays silent for anyone who has asked the OS to tone effects down.
+    if (eggBurst && !prefersReducedMotion()) enterCantina();
     else leaveCantina();
     return () => leaveCantina();
   }, [eggBurst]);
@@ -532,6 +611,7 @@ export function App() {
       if (k === 'c') {
         e.preventDefault();
         copy(copyText, 'Copied ✨');
+        flashCopied('text');
       } else if (k === 's') {
         e.preventDefault();
         doShuffle();
@@ -613,12 +693,21 @@ export function App() {
     setCount(r.count);
     setSeed(r.seed);
     setLorem(r.lorem);
+    setEmoji(r.emoji);
     setGenId((g) => g + 1);
   }
 
   function clearRecent() {
     setRecent([]);
     lastRecorded.current = currentKey;
+  }
+
+  // Flash transient "✓ Copied" feedback on the button that was used, on top of
+  // the aria-live toast (a visual confirmation that doesn't rely on the toast).
+  function flashCopied(id: string) {
+    setCopiedId(id);
+    if (copiedTimer.current) clearTimeout(copiedTimer.current);
+    copiedTimer.current = setTimeout(() => setCopiedId(''), 1600);
   }
 
   async function copy(text: string, msg: string) {
@@ -642,6 +731,11 @@ export function App() {
   }
   function copyLink() {
     copy(location.origin + location.pathname + location.search, 'Link copied 🔗');
+    flashCopied('link');
+  }
+  function copyParagraph(text: string, i: number) {
+    copy(text, 'Paragraph copied ✨');
+    flashCopied(`p${i}`);
   }
 
   function download(filename: string, mime: string, data: string) {
@@ -678,6 +772,7 @@ export function App() {
       blend,
       intensity: blend / 100,
       startWithLorem: lorem,
+      emoji,
       isBlend,
       text: plainText,
       html: htmlText,
@@ -718,6 +813,12 @@ export function App() {
     });
   }
 
+  // The editorial surface follows the OS when on 'auto': parchment (paper) for a
+  // light system, slate for a dark one. The Appearance panel can still override.
+  const surface: Exclude<Surface, 'auto'> =
+    tweaks.surface === 'auto' ? (systemDark ? 'slate' : 'paper') : tweaks.surface;
+  const plainDark =
+    tweaks.plainScheme === 'auto' ? systemDark : tweaks.plainScheme === 'dark';
   const appStyle = {
     '--voice': voice,
     '--blend': blend / 100,
@@ -727,10 +828,11 @@ export function App() {
   return (
     <div
       id="app"
-      data-bg={tweaks.surface}
+      data-bg={surface}
       data-type={tweaks.face}
       data-density={tweaks.density}
       data-tint={tweaks.tint ? undefined : 'off'}
+      data-plain={tweaks.plain ? (plainDark ? 'dark' : 'light') : undefined}
       data-egg={eggActive ? '1' : undefined}
       data-pride={pride ? '1' : undefined}
       style={appStyle}
@@ -748,7 +850,34 @@ export function App() {
         <header className="masthead">
           <div className="mast-top">
             <span>A field guide to themed placeholder text</span>
-            <span className="meta">Est. Cicero, XLV B.C.</span>
+            <span className="mast-right">
+              <span className="meta">Est. Cicero, XLV B.C.</span>
+              {tweaks.plain && (
+                <button
+                  type="button"
+                  className="plain-toggle"
+                  title="Plain view color scheme — Auto follows your system"
+                  onClick={() =>
+                    setTweaks((t) => ({ ...t, plainScheme: SCHEME_CYCLE[t.plainScheme] }))
+                  }
+                >
+                  {tweaks.plainScheme === 'auto'
+                    ? '◐ Auto'
+                    : tweaks.plainScheme === 'dark'
+                      ? '☾ Dark'
+                      : '☀ Light'}
+                </button>
+              )}
+              <button
+                type="button"
+                className="plain-toggle"
+                aria-pressed={tweaks.plain}
+                title="Toggle a bare-bones, dev-friendly view"
+                onClick={() => setTweaks((t) => ({ ...t, plain: !t.plain }))}
+              >
+                {tweaks.plain ? 'Editorial view' : 'Plain view'}
+              </button>
+            </span>
           </div>
           <h1 className="wordmark">
             Lorem <span className="amp">&amp;</span> Ipsum
@@ -767,6 +896,8 @@ export function App() {
           <div className="rule double" />
         </header>
 
+        <div className="workbench">
+          <div className="controls">
         <section className="composer" id="composer" aria-label="Generator controls">
           <div className="group">
             <p className="sec-label" id="voiceLabel">
@@ -899,6 +1030,17 @@ export function App() {
                   />
                   <span>Start with &ldquo;Lorem ipsum&rdquo;</span>
                 </label>
+                {/* Only Yass Kween sparkles, so the toggle appears for it alone. */}
+                {displayTheme.id === 'yass-kween' && (
+                  <label className="toggle">
+                    <input
+                      type="checkbox"
+                      checked={emoji}
+                      onChange={(e) => setEmoji(e.target.checked)}
+                    />
+                    <span>Sparkle emoji ✨</span>
+                  </label>
+                )}
               </div>
             </div>
           </div>
@@ -915,12 +1057,19 @@ export function App() {
             <button
               type="button"
               className="btn"
-              onClick={() => copy(copyText, 'Copied ✨')}
+              onClick={() => {
+                copy(copyText, 'Copied ✨');
+                flashCopied('text');
+              }}
             >
-              &#128203; Copy {html ? 'HTML' : 'text'}
+              {copiedId === 'text' ? (
+                '✓ Copied'
+              ) : (
+                <>&#128203; Copy {html ? 'HTML' : 'text'}</>
+              )}
             </button>
             <button type="button" className="btn" onClick={copyLink}>
-              &#128279; Copy link
+              {copiedId === 'link' ? '✓ Copied' : <>&#128279; Copy link</>}
             </button>
           </div>
           <p className="kbd-hint" aria-hidden="true">
@@ -1001,6 +1150,7 @@ export function App() {
             </div>
           </details>
         )}
+          </div>
 
         <section className="specimen" aria-label="Generated text" aria-live="polite">
           <div className="specimen-top">
@@ -1070,9 +1220,20 @@ export function App() {
           ) : (
             <article className="output" key={genId}>
               {result.blocks.map((p, i) => (
-                <p key={i} className={i === 0 ? 'lead' : ''}>
-                  {renderTokens(p, displayTheme, isBlend, (tip) => showToast(tip))}
-                </p>
+                <div className="op" key={i}>
+                  <p className={i === 0 ? 'lead' : ''}>
+                    {renderTokens(p, displayTheme, isBlend, (tip) => showToast(tip))}
+                  </p>
+                  <button
+                    type="button"
+                    className="op-copy"
+                    title="Copy this paragraph"
+                    aria-label="Copy this paragraph"
+                    onClick={() => copyParagraph(p.map((t) => t.t).join(' '), i)}
+                  >
+                    {copiedId === `p${i}` ? '✓' : '⧉'}
+                  </button>
+                </div>
               ))}
             </article>
           )}
@@ -1084,6 +1245,7 @@ export function App() {
             </details>
           )}
         </section>
+        </div>
 
         {recent.length > 0 && (
           <section className="recent" aria-label="Recent rolls">

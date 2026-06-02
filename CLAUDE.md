@@ -21,15 +21,17 @@ ships three things from one codebase:
 - `src/themes/` — one file per voice (17 visible + hidden Huttese), each a
   plain-data `Theme` object with an `accent` hex color, plus a registry in
   `index.ts`. **To add a theme:** create the file and add it to the `themes`
-  array and `ThemeId` union in `themes/index.ts`.
+  array and `ThemeId` union in `themes/index.ts`. The registry's
+  `withLatinBlend` then blends every voice onto the Cicero base (0 = Latin →
+  1 = voice) unless it defines its own `blendBase`/`intensify` or is Classic.
 - `src/generator.ts` — the engine. It composes words → sentences → paragraphs
   using only theme _data_; there is no per-theme branching here. The `intensity`
   option (0–1) scales openers, interjections, and punctuation, biases the
   origin-word mix, and drives each theme's optional `intensify` stylizer.
   `generateRich()` returns the same text as structured **tokens**, each carrying
   the Cicero `base` it derived from (blend themes) for per-word hover in the UI.
-- `src/themes/origins.ts` — the genuine Cicero source of lorem ipsum, used as
-  Yass Kween's `originWords` (surfaced at low intensity).
+- `src/themes/origins.ts` — the genuine Cicero source of lorem ipsum, the shared
+  blend base for every voice (surfaced at low intensity).
 - **Easter egg:** the seed `jabba` (case-insensitive) overrides the theme with
   the hidden `huttese` voice. See `EASTER_EGG_SEED` / `visibleThemes` in
   `themes/index.ts`. Hidden themes (`hidden: true`) stay out of `--list` and the

@@ -1,4 +1,6 @@
 import type { Theme } from './types.js';
+import { chance, pick, type RandomFn } from '../rng.js';
+import { LOREM_ORIGIN_WORDS } from './origins.js';
 import { classic } from './classic.js';
 import { yasskween } from './yasskween.js';
 import { corporate } from './corporate.js';
@@ -18,7 +20,7 @@ import { barista } from './barista.js';
 import { hoa } from './hoa.js';
 import { huttese } from './huttese.js';
 
-export type { Theme } from './types.js';
+export type { Theme, IntensifyContext } from './types.js';
 
 /**
  * The secret seed that unlocks the hidden Huttese theme. Pass `seed: "jabba"`
@@ -28,6 +30,26 @@ export const EASTER_EGG_SEED = 'jabba';
 
 /** The theme revealed by the {@link EASTER_EGG_SEED}. */
 export const EASTER_EGG_THEME_ID = 'huttese';
+
+/**
+ * Give a voice the Latin blend: words are drawn from Cicero's genuine source
+ * vocabulary and swapped for the theme's own words as intensity climbs, so the
+ * dial runs from pure Latin (`0`) to the pure voice (`1`), the Latin showing
+ * through in between. Voices that already define their own blend (Yass Kween,
+ * Huttese) or that *are* the Latin (Classic) are returned untouched.
+ */
+function withLatinBlend(theme: Theme): Theme {
+  if (theme.blendBase || theme.intensify || theme.id === 'classic') {
+    return theme;
+  }
+  const voice = theme.words;
+  return {
+    ...theme,
+    blendBase: LOREM_ORIGIN_WORDS,
+    intensify: (word: string, intensity: number, rng: RandomFn): string =>
+      chance(rng, intensity) ? pick(rng, voice) : word,
+  };
+}
 
 /** Every built-in theme, in display order (includes hidden ones). */
 export const themes: readonly Theme[] = [
@@ -49,7 +71,7 @@ export const themes: readonly Theme[] = [
   barista,
   hoa,
   huttese,
-];
+].map(withLatinBlend);
 
 /** Themes shown in public listings (excludes hidden Easter-egg themes). */
 export const visibleThemes: readonly Theme[] = themes.filter((t) => !t.hidden);

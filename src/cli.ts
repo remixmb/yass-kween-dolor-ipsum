@@ -14,7 +14,7 @@ import {
   DEFAULT_THEME_ID,
 } from './themes/index.js';
 
-const VERSION = '1.0.1';
+const VERSION = '1.1.0';
 
 interface ParsedArgs {
   options: GenerateOptions;
@@ -44,6 +44,7 @@ OPTIONS
                           theme's own level.
       --html              Wrap output in <p> tags
       --lorem             Start with the classic "Lorem ipsum dolor sit amet"
+      --no-emoji          Omit decorative emoji (e.g. Yass Kween's sparkles)
       --lore              Show the chosen theme's origin story and exit
   -l, --list              List available themes and exit
   -h, --help              Show this help and exit
@@ -56,6 +57,7 @@ EXAMPLES
   yass-ipsum --words 12 --html
   yass-ipsum --temperature 0.1        # cold — raw Latin resurfaces
   yass-ipsum --temp 100 -p 1          # hot — maximum yassification
+  yass-ipsum --no-emoji -p 1          # clean placeholder text, no sparkles
   yass-ipsum --lore
   yass-ipsum --list
 `;
@@ -158,6 +160,9 @@ function parseArgs(argv: string[]): ParsedArgs {
           break;
         case '--lorem':
           result.options.startWithLorem = true;
+          break;
+        case '--no-emoji':
+          result.options.emoji = false;
           break;
         case '--lore':
           result.showLore = true;

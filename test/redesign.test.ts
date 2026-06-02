@@ -9,6 +9,7 @@ import {
   getTheme,
   gloss,
   themeGloss,
+  LOREM_ORIGIN_WORDS,
 } from '../src/index.js';
 
 /** Mirror of the generator's display rendering, for glossary key checks. */
@@ -75,7 +76,7 @@ describe('jargon glossaries (non-blend voices)', () => {
   it('returns empty string for unglossed and for glossary-less themes', () => {
     const corporate = getTheme('corporate')!;
     expect(themeGloss(corporate, 'definitelynotaword')).toBe('');
-    // Blend themes carry no jargon glossary (they gloss Latin roots instead).
+    // Yass Kween ships no jargon glossary — its Latin roots are glossed instead.
     expect(getTheme('yass-kween')!.glossary).toBeUndefined();
     expect(themeGloss(getTheme('yass-kween')!, 'slay')).toBe('');
   });
@@ -114,6 +115,7 @@ describe('jargon glossaries (non-blend voices)', () => {
       theme: 'legalese',
       units: 'words',
       count: 60,
+      intensity: 1,
       seed: 'q',
     });
     const decoded = rich.blocks
@@ -151,9 +153,17 @@ describe('generateRich (token mode)', () => {
     expect(everyToken.some((t) => t.base !== null)).toBe(true);
   });
 
-  it('non-blend voices carry no Latin roots on body words', () => {
+  it('a non-blend (custom) voice carries no Latin roots on body words', () => {
+    // Built-in voices now blend onto Cicero; a custom theme without a blendBase
+    // still exercises the plain, non-blend token path.
     const rich = generateRich({
-      theme: 'corporate',
+      theme: {
+        id: 'plain-x',
+        name: 'Plain X',
+        description: 'no blend',
+        emoji: '🔲',
+        words: ['alpha', 'beta', 'gamma', 'delta', 'epsilon'],
+      },
       units: 'sentences',
       count: 3,
       seed: 'c',
@@ -173,5 +183,38 @@ describe('generateRich (token mode)', () => {
     const a = generateRich({ theme: 'legalese', seed: 'x', count: 2 });
     const b = generateRich({ theme: 'legalese', seed: 'x', count: 2 });
     expect(a.text).toBe(b.text);
+  });
+});
+
+describe('Latin blend across all built-in voices', () => {
+  const originSet = new Set(LOREM_ORIGIN_WORDS);
+
+  it('every visible voice except Classic blends onto Cicero', () => {
+    for (const t of visibleThemes) {
+      expect(Boolean(t.blendBase), t.id).toBe(t.id !== 'classic');
+    }
+  });
+
+  it('at intensity 0 a voice surfaces pure Cicero Latin', () => {
+    const words = generate({
+      theme: 'pirate',
+      units: 'words',
+      count: 40,
+      intensity: 0,
+      seed: 'cic',
+    }).split(/\s+/);
+    for (const w of words) expect(originSet.has(w), w).toBe(true);
+  });
+
+  it('at intensity 1 a voice surfaces its own vocabulary', () => {
+    const voice = new Set(getTheme('pirate')!.words);
+    const words = generate({
+      theme: 'pirate',
+      units: 'words',
+      count: 40,
+      intensity: 1,
+      seed: 'arr',
+    }).split(/\s+/);
+    for (const w of words) expect(voice.has(w), w).toBe(true);
   });
 });

@@ -129,6 +129,47 @@ describe('generate — startWithLorem', () => {
   });
 });
 
+describe('generate — emoji option', () => {
+  const EMOJI = /\p{Extended_Pictographic}/u;
+
+  it('emits decorative emoji by default at high intensity (yass-kween)', () => {
+    const text = generate({
+      theme: 'yass-kween',
+      units: 'words',
+      count: 200,
+      seed: 'sparkle',
+      intensity: 1,
+    });
+    expect(EMOJI.test(text)).toBe(true);
+  });
+
+  it('omits emoji when emoji is false', () => {
+    const text = generate({
+      theme: 'yass-kween',
+      units: 'words',
+      count: 200,
+      seed: 'sparkle',
+      intensity: 1,
+      emoji: false,
+    });
+    expect(EMOJI.test(text)).toBe(false);
+  });
+
+  it('toggling emoji never changes the underlying words', () => {
+    const opts = {
+      theme: 'yass-kween',
+      units: 'paragraphs',
+      count: 3,
+      seed: 'parity',
+      intensity: 1,
+    } as const;
+    const sparkled = generate({ ...opts, emoji: true });
+    const plain = generate({ ...opts, emoji: false });
+    // The only difference is the appended glyphs; strip them and the two match.
+    expect(sparkled.replace(/\p{Extended_Pictographic}/gu, '')).toBe(plain);
+  });
+});
+
 describe('generate — theme handling', () => {
   it('accepts a theme id', () => {
     expect(() => generate({ theme: 'corporate', seed: 'c' })).not.toThrow();

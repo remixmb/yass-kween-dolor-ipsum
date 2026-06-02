@@ -94,6 +94,22 @@ describe('cli', () => {
     expect(out).toContain('<p>');
   });
 
+  it('omits emoji with --no-emoji', () => {
+    const { code, out } = captureRun([
+      '--theme',
+      'yass-kween',
+      '--words',
+      '200',
+      '-i',
+      '100',
+      '--no-emoji',
+      '--seed',
+      'sparkle',
+    ]);
+    expect(code).toBe(0);
+    expect(/\p{Extended_Pictographic}/u.test(out)).toBe(false);
+  });
+
   it('errors on an unknown option', () => {
     const { code, err } = captureRun(['--nope']);
     expect(code).toBe(1);

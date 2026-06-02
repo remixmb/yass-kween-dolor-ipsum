@@ -1351,6 +1351,36 @@ select:focus,
     transform: scaleY(1.3);
   }
 }
+/* Idle life: a slow breath and the occasional blink. */
+.hutt-body {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: huttBreathe 4.2s ease-in-out 1.6s infinite;
+}
+.hutt-eyes {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: huttBlink 5.4s ease-in-out 2.4s infinite;
+}
+@keyframes huttBreathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.025);
+  }
+}
+@keyframes huttBlink {
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+  95% {
+    transform: scaleY(0.1);
+  }
+}
 
 /* ---------- Pride easter egg ---------- */
 #app[data-pride] .aura {
@@ -1724,6 +1754,8 @@ summary:focus-visible,
   .egg-inner,
   .egg-laugh,
   .hutt,
+  .hutt-body,
+  .hutt-eyes,
   .hutt-mouth,
   .pride-burst,
   .pride-flag,
@@ -1742,6 +1774,15 @@ summary:focus-visible,
 
 /* ---------- mobile ---------- */
 @media (max-width: 680px) {
+  /* Compact the whole vertical rhythm on phones. Touch targets stay comfortable
+     via the fixed paddings in the pointer:coarse block below. */
+  #app {
+    --u: 0.82;
+  }
+  .dek {
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
   .page {
     padding: calc(26px * var(--u)) 16px calc(44px * var(--u));
   }
@@ -1881,4 +1922,218 @@ summary:focus-visible,
   .pride-sub {
     margin-top: 0.5em;
   }
+}
+
+/* ====================================================================
+   Workbench layout · per-paragraph copy · plain dev view
+   ==================================================================== */
+
+/* ---------- two-column workbench on wide screens ---------- */
+@media (min-width: 1024px) {
+  .page {
+    max-width: 1180px;
+  }
+  .workbench {
+    display: grid;
+    grid-template-columns: minmax(360px, 1fr) minmax(0, 1.32fr);
+    gap: clamp(26px, 3.2vw, 48px);
+    align-items: start;
+  }
+  /* Keep the controls in view while a long specimen scrolls past. */
+  .controls {
+    position: sticky;
+    top: 22px;
+  }
+  .workbench .composer {
+    margin-bottom: 0;
+  }
+  .specimen {
+    min-width: 0;
+  }
+}
+
+/* ---------- per-paragraph copy ---------- */
+.op {
+  position: relative;
+}
+.op-copy {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--field);
+  color: var(--ink-faint);
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease;
+}
+.op:hover .op-copy,
+.op-copy:focus-visible {
+  opacity: 1;
+}
+.op-copy:hover {
+  color: var(--ink);
+  border-color: var(--line-strong);
+}
+/* Touch devices have no hover, so keep the affordance gently visible. */
+@media (hover: none) {
+  .op-copy {
+    opacity: 0.5;
+  }
+}
+
+/* ---------- plain-view toggle (masthead) ---------- */
+.mast-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+.plain-toggle {
+  font-family: var(--sans);
+  font-size: calc(10px * var(--fs));
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 13px;
+  cursor: pointer;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+.plain-toggle:hover {
+  color: var(--ink);
+  border-color: var(--line-strong);
+}
+.plain-toggle[aria-pressed='true'] {
+  color: var(--ink);
+  border-color: var(--ink-soft);
+  background: color-mix(in oklab, var(--ink) 8%, transparent);
+}
+
+/* ---------- plain mode: bare-bones, high-contrast dev view ----------
+   Structural rules (mono font, flat surfaces, no flourishes) apply to both
+   palettes via [data-plain]; the light/dark blocks below only set colors, so
+   every element re-themes through the CSS variables. */
+#app[data-plain] {
+  color: var(--ink);
+  font-family: var(--mono);
+}
+#app[data-plain] .bg {
+  display: none;
+}
+#app[data-plain] .dek,
+#app[data-plain] .mast-top .meta,
+#app[data-plain] .lore {
+  display: none;
+}
+#app[data-plain] .wordmark {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 4vw, 2.1rem);
+  letter-spacing: -0.01em;
+}
+#app[data-plain] .wordmark .amp {
+  font-style: normal;
+  color: var(--ink);
+}
+#app[data-plain] .rule.double {
+  border-top: none;
+  border-bottom: 1px solid var(--line);
+  padding-top: 0;
+}
+#app[data-plain] .composer {
+  border-radius: 4px;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+#app[data-plain] .chip,
+#app[data-plain] .view-seg button,
+#app[data-plain] .btn,
+#app[data-plain] .text-in,
+#app[data-plain] select,
+#app[data-plain] .icon-btn,
+#app[data-plain] .op-copy,
+#app[data-plain] .badge,
+#app[data-plain] .recent-item,
+#app[data-plain] .cmp-card,
+#app[data-plain] .plain-toggle {
+  border-radius: 3px;
+  box-shadow: none;
+  font-family: var(--mono);
+}
+#app[data-plain] .chip.active,
+#app[data-plain] .view-seg button.on,
+#app[data-plain] .btn-primary {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--card);
+}
+#app[data-plain] .output {
+  font-family: var(--mono);
+  font-size: calc(0.98rem * var(--fs));
+  line-height: 1.7;
+}
+#app[data-plain] .output p.lead:first-letter {
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  float: none;
+  margin: 0;
+  color: inherit;
+}
+#app[data-plain] .output p {
+  animation: none;
+}
+#app[data-plain] .cicero {
+  border: none;
+  text-decoration: none;
+  background: none;
+  color: inherit;
+  cursor: text;
+}
+
+/* Plain — light palette (default). `!important` on --voice beats the inline
+   --voice that appStyle sets on #app. */
+#app[data-plain='light'] {
+  --voice: #334155 !important;
+  --accent: #334155;
+  --ink: #15171c;
+  --ink-soft: #3c4049;
+  --ink-faint: #6b6f7a;
+  --line: #d7d7d0;
+  --line-strong: #bcbcb3;
+  --field: #ffffff;
+  --card: #ffffff;
+  background: #fbfbf9;
+}
+
+/* Plain — dark palette */
+#app[data-plain='dark'] {
+  --voice: #93a4c0 !important;
+  --accent: #93a4c0;
+  --ink: #e7e8ea;
+  --ink-soft: #b3b7c0;
+  --ink-faint: #868b95;
+  --line: #2b2e36;
+  --line-strong: #3d414b;
+  --field: #181a1f;
+  --card: #14151a;
+  background: #0f1013;
 }

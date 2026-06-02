@@ -38,7 +38,7 @@ const UNIT_SHORT: Record<Unit, string> = {
 };
 
 /* ---------- appearance tweaks (persisted) ---------- */
-type Surface = 'slate' | 'paper' | 'aurora';
+type Surface = 'auto' | 'slate' | 'paper' | 'aurora';
 type Face = 'spectral' | 'garamond' | 'newsreader';
 type Density = 'compact' | 'regular' | 'spacious';
 type PlainScheme = 'auto' | 'light' | 'dark';
@@ -58,14 +58,14 @@ interface Tweaks {
   plainScheme: PlainScheme;
 }
 const DEFAULT_TWEAKS: Tweaks = {
-  surface: 'slate',
+  surface: 'auto',
   face: 'spectral',
   density: 'regular',
   tint: true,
   plain: false,
   plainScheme: 'auto',
 };
-const SURFACES: Surface[] = ['slate', 'paper', 'aurora'];
+const SURFACES: Surface[] = ['auto', 'slate', 'paper', 'aurora'];
 const FACES: Face[] = ['spectral', 'garamond', 'newsreader'];
 const DENSITIES: Density[] = ['compact', 'regular', 'spacious'];
 
@@ -813,6 +813,10 @@ export function App() {
     });
   }
 
+  // The editorial surface follows the OS when on 'auto': parchment (paper) for a
+  // light system, slate for a dark one. The Appearance panel can still override.
+  const surface: Exclude<Surface, 'auto'> =
+    tweaks.surface === 'auto' ? (systemDark ? 'slate' : 'paper') : tweaks.surface;
   const plainDark =
     tweaks.plainScheme === 'auto' ? systemDark : tweaks.plainScheme === 'dark';
   const appStyle = {
@@ -824,7 +828,7 @@ export function App() {
   return (
     <div
       id="app"
-      data-bg={tweaks.surface}
+      data-bg={surface}
       data-type={tweaks.face}
       data-density={tweaks.density}
       data-tint={tweaks.tint ? undefined : 'off'}

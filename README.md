@@ -41,10 +41,10 @@ of lorem ipsum. Generate filler in **seventeen** distinct voices — from sassy
 - **Per-word glosses, both ways** — `generateRich()` returns tokens carrying the Latin root behind each blended word (`📜 dolorem · pain`), and the plain-spoken voices ship a **jargon glossary**, so the demo decodes buzzwords too (`💡 synergy · combined output, allegedly greater than the sum`).
 - **An editorial web playground** — a 17-voice keyboard radiogroup, a blend dial that recolors the whole page, a **compare gallery** across every voice at one seed, a **recent-rolls** history, **`.txt` / `.json` export**, and shareable permalinks.
 - **Deterministic output** — pass a `seed` and get byte-for-byte reproducible text. Great for tests and shareable permalinks.
-- **Three units** — `words`, `sentences`, or `paragraphs`, plus optional `text` or `html` output (HTML is escaped).
+- **Four units** — `words`, `sentences`, `paragraphs`, or `characters` (trimmed to a word boundary), plus optional `text` or `html` output (HTML is escaped).
 - **Zero runtime dependencies.** The core is plain, portable TypeScript; the React demo is dev-only and the published package excludes it.
 - **Works everywhere** — library (ESM + CJS), CLI, and browser. Ships full type declarations.
-- **Tested & typed** — 89 tests, ~98% line coverage, strict TypeScript, ESLint + Prettier, CI.
+- **Tested & typed** — 132 tests, ~98% line coverage, strict TypeScript, ESLint + Prettier, CI.
 
 ## 🎭 Themes
 
@@ -389,6 +389,9 @@ To cut a release:
 1. Bump `version` in `package.json` and commit.
 2. Tag and push: `git tag v1.2.3 && git push --tags`.
 3. Publish a **GitHub Release** for that tag.
+
+Notable changes for each version are recorded in
+[`CHANGELOG.md`](./CHANGELOG.md).
 
 The [`release` workflow](.github/workflows/release.yml) then publishes to npm
 with [provenance](https://docs.npmjs.com/generating-provenance-statements). It

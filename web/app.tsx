@@ -969,6 +969,7 @@ export function App() {
                 </button>
               ))}
             </div>
+            <p className="voice-blurb">{displayTheme.description}</p>
           </div>
 
           <div className="group">

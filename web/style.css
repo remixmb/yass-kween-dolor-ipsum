@@ -339,6 +339,15 @@ body {
   flex-wrap: wrap;
   gap: calc(7px * var(--u));
 }
+/* A one-line, voice-tinted blurb describing the selected voice. The accent
+   morphs with the blend, so the caption picks up the voice as the dial climbs. */
+.voice-blurb {
+  margin: calc(11px * var(--u)) 0 0;
+  font-size: calc(0.86rem * var(--fs));
+  font-style: italic;
+  color: var(--accent);
+  transition: color 0.6s ease;
+}
 .chip {
   display: inline-flex;
   align-items: center;

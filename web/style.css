@@ -348,6 +348,70 @@ body {
   color: var(--accent);
   transition: color 0.6s ease;
 }
+
+/* ---------- "load your own voice" editor ---------- */
+.custom-toggle {
+  margin-top: calc(10px * var(--u));
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--sans);
+  font-size: calc(0.8rem * var(--fs));
+  font-weight: 600;
+  color: var(--ink-faint);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.custom-toggle:hover {
+  color: var(--accent);
+}
+.custom-editor {
+  margin-top: calc(10px * var(--u));
+  display: flex;
+  flex-direction: column;
+  gap: calc(9px * var(--u));
+}
+.custom-help {
+  font-family: var(--sans);
+  font-size: calc(0.74rem * var(--fs));
+  line-height: 1.5;
+  color: var(--ink-faint);
+}
+.custom-help code {
+  font-family: var(--mono);
+  font-size: 0.92em;
+  color: var(--ink-soft);
+}
+.custom-json {
+  width: 100%;
+  resize: vertical;
+  box-sizing: border-box;
+  padding: calc(10px * var(--u)) calc(12px * var(--u));
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--field);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: calc(0.78rem * var(--fs));
+  line-height: 1.5;
+  tab-size: 2;
+}
+.custom-json:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: var(--accent);
+}
+.custom-error {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: calc(0.74rem * var(--fs));
+  color: #e0457b;
+}
+.custom-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(8px * var(--u));
+}
 .chip {
   display: inline-flex;
   align-items: center;

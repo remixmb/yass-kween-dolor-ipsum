@@ -27,7 +27,7 @@ describe('initialize', () => {
     const result = resultOf(
       call({ jsonrpc: '2.0', id: 1, method: 'initialize', params: {} }),
     );
-    expect(result.serverInfo).toEqual({ name: 'yass-ipsum', version: '1.2.1' });
+    expect(result.serverInfo).toEqual({ name: 'yass-ipsum', version: '1.3.0' });
     expect(result.capabilities).toEqual({ tools: {} });
     expect(typeof result.protocolVersion).toBe('string');
   });

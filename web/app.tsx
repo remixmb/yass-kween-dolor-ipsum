@@ -15,6 +15,7 @@ import {
   themeGloss,
   getTheme,
   visibleThemes,
+  withLatinBlend,
   DEFAULT_THEME_ID,
   EASTER_EGG_SEED,
   EASTER_EGG_THEME_ID,
@@ -112,6 +113,19 @@ interface Roll {
 const RECENT_KEY = 'li:recent';
 const TWEAKS_KEY = 'li:tweaks';
 const DEV_KEY = 'li:dev';
+const CUSTOM_KEY = 'li:custom';
+/** The id the playground uses internally for a user-loaded voice. */
+const CUSTOM_ID = 'custom';
+/** A starter voice shown in the "load your own" editor. */
+const CUSTOM_TEMPLATE = `{
+  "name": "My Voice",
+  "emoji": "🧪",
+  "accent": "#22c55e",
+  "words": ["widget", "doohickey", "thingamajig", "gizmo", "contraption", "gadget", "whatsit", "doodad"],
+  "openers": ["Behold,", "In short,"],
+  "interjections": ["Indeed.", "Quite so."],
+  "glossary": { "doohickey": "a thing whose name escapes you" }
+}`;
 const RECENT_MAX = 14;
 
 // Secret seeds (case-insensitive). `jabba` is handled by the library itself
@@ -159,6 +173,66 @@ function writeStore(key: string, value: unknown): void {
   } catch {
     /* storage may be unavailable (private mode, quotas) — ignore. */
   }
+}
+
+/**
+ * Parse a user-supplied voice (JSON) into a Theme for the playground. Forgiving:
+ * only a non-empty `words` array is required; everything else has a sensible
+ * default. The result is run through {@link withLatinBlend} so it crossfades
+ * onto Cicero exactly like the built-in voices, and its id is fixed to
+ * {@link CUSTOM_ID} so all the selection/permalink plumbing stays simple.
+ */
+function parseCustomTheme(draft: string): { theme: Theme | null; error: string } {
+  let raw: unknown;
+  try {
+    raw = JSON.parse(draft);
+  } catch (e) {
+    return { theme: null, error: `Invalid JSON — ${(e as Error).message}` };
+  }
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    return { theme: null, error: 'Expected a JSON object, e.g. { "words": [ … ] }.' };
+  }
+  const o = raw as Record<string, unknown>;
+  const strArr = (v: unknown): string[] =>
+    Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string' && x.trim().length > 0) : [];
+  const words = strArr(o.words);
+  if (words.length === 0) {
+    return { theme: null, error: 'Add at least one entry to "words".' };
+  }
+  const str = (v: unknown, fallback: string): string =>
+    typeof v === 'string' && v.trim() ? v.trim() : fallback;
+  const name = str(o.name, 'Custom Voice');
+  const accent = typeof o.accent === 'string' && /^#[0-9a-f]{6}$/i.test(o.accent) ? o.accent : '#22c55e';
+  const glossary =
+    o.glossary && typeof o.glossary === 'object' && !Array.isArray(o.glossary)
+      ? Object.fromEntries(
+          Object.entries(o.glossary as Record<string, unknown>).filter(
+            ([, v]) => typeof v === 'string',
+          ),
+        )
+      : undefined;
+  const di = typeof o.defaultIntensity === 'number' ? Math.min(1, Math.max(0, o.defaultIntensity)) : 0.7;
+  const base: Theme = {
+    id: CUSTOM_ID,
+    name,
+    description: str(o.description, `Your custom voice — ${name}.`),
+    emoji: str(o.emoji, '🧪'),
+    accent,
+    defaultIntensity: di,
+    words,
+    openers: strArr(o.openers),
+    interjections: strArr(o.interjections),
+    ...(glossary && Object.keys(glossary).length
+      ? { glossary: glossary as Record<string, string> }
+      : {}),
+  };
+  return { theme: withLatinBlend(base), error: '' };
+}
+
+/** Restore a previously loaded custom voice from storage (silent on failure). */
+function loadCustom(): Theme | null {
+  const draft = readStore<string>(CUSTOM_KEY, '');
+  return draft ? parseCustomTheme(draft).theme : null;
 }
 
 /** The OS color-scheme preference, used as the plain view's first default. */
@@ -324,8 +398,10 @@ function initialState(): InitialState {
   const seed = seedParam && seedParam.trim() ? seedParam.trim() : randomSeed();
   const jabba = seed.toLowerCase() === EASTER_EGG_SEED;
   let themeId = p.get('theme') ?? '';
-  if (!getTheme(themeId)) themeId = DEFAULT_THEME_ID;
-  const tObj = getTheme(jabba ? EASTER_EGG_THEME_ID : themeId)!;
+  // A previously loaded custom voice can be the active theme on reload.
+  const custom = themeId === CUSTOM_ID ? loadCustom() : null;
+  if (!custom && !getTheme(themeId)) themeId = DEFAULT_THEME_ID;
+  const tObj = custom ?? getTheme(jabba ? EASTER_EGG_THEME_ID : themeId)!;
   let blend = Number(p.get('temp'));
   if (p.get('temp') === null || !Number.isFinite(blend)) {
     blend = Math.round((tObj.defaultIntensity ?? 0.5) * 100);
@@ -433,6 +509,13 @@ export function App() {
   const [prideBurst, setPrideBurst] = useState(false);
   const [installEvt, setInstallEvt] = useState<BeforeInstallPromptEvent | null>(null);
   const [genId, setGenId] = useState(0);
+  // A user-loaded "test your own voice" theme (paste JSON in the playground).
+  const [customTheme, setCustomTheme] = useState<Theme | null>(loadCustom);
+  const [customOpen, setCustomOpen] = useState(false);
+  const [customDraft, setCustomDraft] = useState(
+    () => readStore<string>(CUSTOM_KEY, '') || CUSTOM_TEMPLATE,
+  );
+  const [customError, setCustomError] = useState('');
 
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const copiedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -449,7 +532,9 @@ export function App() {
   const result = useMemo(
     () =>
       generateRich({
-        theme: themeId,
+        // When the custom voice is active, hand the generator the Theme object
+        // itself (it isn't in the registry); otherwise resolve by id.
+        theme: customTheme && themeId === CUSTOM_ID ? customTheme : themeId,
         units: unit,
         count,
         seed,
@@ -457,7 +542,7 @@ export function App() {
         startWithLorem: lorem,
         emoji,
       }),
-    [themeId, unit, count, seed, blend, lorem, emoji],
+    [themeId, unit, count, seed, blend, lorem, emoji, customTheme],
   );
   const displayTheme = result.theme;
   const isBlend = result.isBlend;
@@ -481,13 +566,12 @@ export function App() {
     emoji,
   });
 
-  const chipThemes = useMemo(
-    () =>
-      hutteseRevealed
-        ? [...visibleThemes, getTheme(EASTER_EGG_THEME_ID)!]
-        : [...visibleThemes],
-    [hutteseRevealed],
-  );
+  const chipThemes = useMemo(() => {
+    const base = hutteseRevealed
+      ? [...visibleThemes, getTheme(EASTER_EGG_THEME_ID)!]
+      : [...visibleThemes];
+    return customTheme ? [...base, customTheme] : base;
+  }, [hutteseRevealed, customTheme]);
 
   // Compare gallery: one short, same-seed specimen per voice at its natural
   // blend. Computed only while the gallery is open. Dodge the Jabba override so
@@ -498,7 +582,9 @@ export function App() {
     return chipThemes.map((th) => ({
       theme: th,
       text: generate({
-        theme: th.id,
+        // Pass the Theme object (works for built-ins and the custom voice,
+        // which isn't registered by id).
+        theme: th,
         units: 'sentences',
         count: 1,
         seed: previewSeed,
@@ -544,6 +630,9 @@ export function App() {
   useEffect(() => {
     const id = setTimeout(() => {
       if (currentKey === lastRecorded.current) return;
+      // A custom voice lives only in this browser, so it isn't a reproducible,
+      // shareable roll — keep it out of Recent Rolls.
+      if (displayTheme.id === CUSTOM_ID) return;
       lastRecorded.current = currentKey;
       const entry: Roll = {
         key: currentKey,
@@ -678,6 +767,12 @@ export function App() {
   }
 
   function selectTheme(id: string) {
+    if (id === CUSTOM_ID && customTheme) {
+      setThemeId(CUSTOM_ID);
+      setBlend(Math.round((customTheme.defaultIntensity ?? 0.7) * 100));
+      setGenId((g) => g + 1);
+      return;
+    }
     const th = getTheme(id);
     if (th?.hidden) {
       // Picking the secret Hutt chip replays the cantina, laugh and all.
@@ -687,6 +782,23 @@ export function App() {
     setThemeId(id);
     if (th) setBlend(Math.round((th.defaultIntensity ?? 0.5) * 100));
     setGenId((g) => g + 1);
+  }
+
+  /** Parse the editor's JSON, load it as the active voice, and remember it. */
+  function applyCustom() {
+    const { theme, error } = parseCustomTheme(customDraft);
+    if (!theme) {
+      setCustomError(error);
+      return;
+    }
+    setCustomError('');
+    setCustomTheme(theme);
+    writeStore(CUSTOM_KEY, customDraft);
+    setThemeId(CUSTOM_ID);
+    setBlend(Math.round((theme.defaultIntensity ?? 0.7) * 100));
+    setGenId((g) => g + 1);
+    setCustomOpen(false);
+    showToast('🧪 Custom voice loaded');
   }
 
   function onSeed(v: string) {
@@ -970,6 +1082,54 @@ export function App() {
               ))}
             </div>
             <p className="voice-blurb">{displayTheme.description}</p>
+            <button
+              type="button"
+              className="custom-toggle"
+              aria-expanded={customOpen}
+              onClick={() => setCustomOpen((o) => !o)}
+            >
+              🧪 {customOpen ? 'Hide voice editor' : 'Load your own voice…'}
+            </button>
+            {customOpen && (
+              <div className="custom-editor">
+                <label htmlFor="customjson" className="custom-help">
+                  Paste a voice as JSON — <code>words</code> is the only required
+                  field; <code>openers</code>, <code>interjections</code>,{' '}
+                  <code>glossary</code>, <code>name</code>, <code>emoji</code>, and{' '}
+                  <code>accent</code> are optional. It blends onto Latin just like
+                  the built-in voices. Tip: export any voice as <code>.json</code>,
+                  tweak it, and paste it back.
+                </label>
+                <textarea
+                  id="customjson"
+                  className="custom-json"
+                  value={customDraft}
+                  spellCheck={false}
+                  rows={12}
+                  onChange={(e) => setCustomDraft(e.target.value)}
+                />
+                {customError && (
+                  <p className="custom-error" role="alert">
+                    {customError}
+                  </p>
+                )}
+                <div className="custom-actions">
+                  <button type="button" className="btn btn-primary" onClick={applyCustom}>
+                    Use this voice
+                  </button>
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={() => {
+                      setCustomDraft(CUSTOM_TEMPLATE);
+                      setCustomError('');
+                    }}
+                  >
+                    Reset to template
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="group">
@@ -1318,7 +1478,10 @@ export function App() {
             </div>
             <div className="recent-strip">
               {recent.map((r) => {
-                const th = getTheme(r.themeId)!;
+                // Skip any roll whose voice no longer resolves (e.g. a stale
+                // custom roll) rather than crash on a missing theme.
+                const th = getTheme(r.themeId);
+                if (!th) return null;
                 const on = r.key === currentKey;
                 return (
                   <button

@@ -4,6 +4,33 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and the project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [1.2.1] — 2026-06-02
+
+### Fixed
+
+- **The blend / `temperature` dial is now a smooth, monotonic crossfade.**
+  Previously the dial had dead zones (past a point, nudging it changed nothing)
+  and elsewhere reshuffled the whole passage, because every intensity-dependent
+  decision drew a _variable_ number of RNG values — so changing intensity
+  shifted the entire downstream stream. RNG consumption is now
+  intensity-independent (each decision draws its threshold and candidate
+  unconditionally, using them only when the dial calls for it), so raising the
+  dial converts more words while the Latin skeleton stays put. Determinism is
+  preserved and the `0` = Latin / `1` = voice endpoints are unchanged, but
+  output for a given seed differs from 1.2.0.
+
+### Web demo
+
+These ship in the live demo only (not in the published package):
+
+- Fixed the per-word hover tooltip's contrast in plain ("simple") mode.
+- Much more compact, denser mobile layout; an improved Jabba easter egg on
+  mobile (bigger Hutt, explicit close button, safe-area insets).
+- Reworked the cantina easter-egg loop into a busier novelty-swing arrangement
+  (still an original, IP-safe composition).
+- Self-hosted the web fonts (dropped Google Fonts) — no third-party request, so
+  iOS Safari's privacy protections no longer flag the page on load.
+
 ## [1.2.0] — 2026-06-02
 
 ### Added
@@ -58,6 +85,7 @@ All notable changes to this project are documented here. The format follows
 - Initial release: a zero-dependency themed placeholder-text generator —
   library, CLI (`yass-ipsum`), MCP server (`yass-ipsum-mcp`), and a web demo.
 
+[1.2.1]: https://github.com/remixmb/yass-kween-dolor-ipsum/releases/tag/v1.2.1
 [1.2.0]: https://github.com/remixmb/yass-kween-dolor-ipsum/releases/tag/v1.2.0
 [1.1.0]: https://github.com/remixmb/yass-kween-dolor-ipsum/releases/tag/v1.1.0
 [1.0.1]: https://github.com/remixmb/yass-kween-dolor-ipsum/releases/tag/v1.0.1

@@ -1,12 +1,14 @@
 /* ============================================================
-   eggAudio — procedural chiptune for the Huttese Easter egg.
+   eggAudio — procedural swing-jazz for the Huttese Easter egg.
 
-   No audio files, no dependencies, nothing copyrighted: every sound is
-   synthesized live with the Web Audio API. A guttural "ho ho ho" laugh (with a
-   touch of cavernous echo) plus an original 8-bit swing loop — a two-phrase
-   A/B riff over a walking bass and a little kick/snare/hat kit — that evokes a
-   seedy alien cantina without quoting anyone's melody. Stays silent until the
-   user explicitly summons Jabba, so it never autoplays uninvited.
+   No audio files, no dependencies, nothing copyrighted. The famous cantina
+   number is John Williams' copyrighted composition, so this deliberately does
+   NOT reproduce that melody. Instead it synthesizes an ORIGINAL tune in the
+   same unmistakable idiom — a fast, bouncy Benny-Goodman / Dixieland swing
+   combo: a clarinet-ish lead that scoops up into its notes, a walking upright
+   bass, off-beat "piano" comp stabs, and brushed swing drums — so it reads as
+   "cantina" without quoting anyone. Plus a guttural "ho ho ho" laugh. Stays
+   silent until the user explicitly summons Jabba, so it never autoplays.
    ============================================================ */
 
 type AudioWindow = typeof window & { webkitAudioContext?: typeof AudioContext };
@@ -14,7 +16,7 @@ type AudioWindow = typeof window & { webkitAudioContext?: typeof AudioContext };
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
 let noiseBuffer: AudioBuffer | null = null;
-let vibrato: GainNode | null = null; // LFO depth (cents) → lead osc.detune
+let vibrato: GainNode | null = null; // shared LFO depth (cents) → lead detune
 
 let loopTimer: ReturnType<typeof setTimeout> | null = null;
 let nextStepTime = 0;
@@ -33,19 +35,19 @@ function ensureContext(): AudioContext | null {
     if (!Ctor) return null;
     ctx = new Ctor();
     master = ctx.createGain();
-    master.gain.value = 0.16;
+    master.gain.value = 0.15;
     master.connect(ctx.destination);
-    // A short white-noise buffer reused for the hats and snare.
-    const len = Math.floor(ctx.sampleRate * 0.2);
+    // A reusable noise buffer for the brushed kit.
+    const len = Math.floor(ctx.sampleRate * 0.3);
     noiseBuffer = ctx.createBuffer(1, len, ctx.sampleRate);
     const data = noiseBuffer.getChannelData(0);
     for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
-    // A slow vibrato LFO shared by the lead, for a woozy "alien jazz" wobble.
+    // A shared vibrato LFO for the clarinet-ish lead.
     const lfo = ctx.createOscillator();
     lfo.type = 'sine';
-    lfo.frequency.value = 5.4;
+    lfo.frequency.value = 5.6;
     vibrato = ctx.createGain();
-    vibrato.gain.value = 16; // ± cents
+    vibrato.gain.value = 14; // ± cents
     lfo.connect(vibrato);
     lfo.start();
   }
@@ -53,37 +55,111 @@ function ensureContext(): AudioContext | null {
   return ctx;
 }
 
-/** One pitched blip (square = lead, triangle = bass/pad). */
-function blip(
-  freq: number,
-  start: number,
-  dur: number,
-  type: OscillatorType,
-  peak: number,
-  vib = false,
-): void {
+/**
+ * Clarinet-ish lead: a square wave (odd harmonics, like a clarinet) softened by
+ * a lowpass, given vibrato and — on accented notes — a quick scoop up into the
+ * pitch, the signature swing-clarinet articulation.
+ */
+function lead(freq: number, start: number, dur: number, peak: number, scoop = false): void {
   if (!ctx || !master) return;
   const osc = ctx.createOscillator();
+  const lp = ctx.createBiquadFilter();
   const gain = ctx.createGain();
-  osc.type = type;
-  osc.frequency.setValueAtTime(freq, start);
-  if (vib && vibrato) vibrato.connect(osc.detune);
+  osc.type = 'square';
+  lp.type = 'lowpass';
+  lp.frequency.value = 2600;
+  if (scoop) {
+    osc.frequency.setValueAtTime(freq * 0.92, start);
+    osc.frequency.exponentialRampToValueAtTime(freq, start + 0.05);
+  } else {
+    osc.frequency.setValueAtTime(freq, start);
+  }
+  if (vibrato) vibrato.connect(osc.detune);
   gain.gain.setValueAtTime(0.0001, start);
-  gain.gain.exponentialRampToValueAtTime(peak, start + 0.01);
+  gain.gain.exponentialRampToValueAtTime(peak, start + 0.015);
+  gain.gain.setValueAtTime(peak, start + dur * 0.6);
   gain.gain.exponentialRampToValueAtTime(0.0001, start + dur);
-  osc.connect(gain).connect(master);
+  osc.connect(lp).connect(gain).connect(master);
+  osc.start(start);
+  osc.stop(start + dur + 0.03);
+}
+
+/** Walking upright bass: a soft triangle with a quick pluck and a lowpass body. */
+function bass(freq: number, start: number, dur: number, peak: number): void {
+  if (!ctx || !master) return;
+  const osc = ctx.createOscillator();
+  const lp = ctx.createBiquadFilter();
+  const gain = ctx.createGain();
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(freq, start);
+  lp.type = 'lowpass';
+  lp.frequency.value = 520;
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.exponentialRampToValueAtTime(peak, start + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+  osc.connect(lp).connect(gain).connect(master);
   osc.start(start);
   osc.stop(start + dur + 0.02);
 }
 
-/** A noise tick for the off-beat hat. */
-function hat(start: number, peak: number): void {
+/** Off-beat comp stab (the swing "chnk") — a couple of short, bright guide tones. */
+function comp(freqs: number[], start: number, peak: number): void {
+  if (!ctx || !master) return;
+  for (const f of freqs) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(f, start);
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(peak, start + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.13);
+    osc.connect(gain).connect(master);
+    osc.start(start);
+    osc.stop(start + 0.15);
+  }
+}
+
+/** A feathered, soft jazz kick. */
+function kick(start: number, peak: number): void {
+  if (!ctx || !master) return;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(120, start);
+  osc.frequency.exponentialRampToValueAtTime(45, start + 0.1);
+  gain.gain.setValueAtTime(peak, start);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.16);
+  osc.connect(gain).connect(master);
+  osc.start(start);
+  osc.stop(start + 0.18);
+}
+
+/** Brushed backbeat — soft band-passed noise with a little swish. */
+function brush(start: number, peak: number): void {
+  if (!ctx || !master || !noiseBuffer) return;
+  const src = ctx.createBufferSource();
+  src.buffer = noiseBuffer;
+  const bp = ctx.createBiquadFilter();
+  bp.type = 'bandpass';
+  bp.frequency.value = 2400;
+  bp.Q.value = 0.6;
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.exponentialRampToValueAtTime(peak, start + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.12);
+  src.connect(bp).connect(gain).connect(master);
+  src.start(start);
+  src.stop(start + 0.14);
+}
+
+/** Swing ride tick (the "spang-a-lang"). */
+function ride(start: number, peak: number): void {
   if (!ctx || !master || !noiseBuffer) return;
   const src = ctx.createBufferSource();
   src.buffer = noiseBuffer;
   const hp = ctx.createBiquadFilter();
   hp.type = 'highpass';
-  hp.frequency.value = 6000;
+  hp.frequency.value = 7000;
   const gain = ctx.createGain();
   gain.gain.setValueAtTime(peak, start);
   gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.05);
@@ -92,78 +168,56 @@ function hat(start: number, peak: number): void {
   src.stop(start + 0.06);
 }
 
-/** A low sine thump with a fast pitch drop — the kick. */
-function kick(start: number, peak: number): void {
-  if (!ctx || !master) return;
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.type = 'sine';
-  osc.frequency.setValueAtTime(150, start);
-  osc.frequency.exponentialRampToValueAtTime(48, start + 0.12);
-  gain.gain.setValueAtTime(peak, start);
-  gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.18);
-  osc.connect(gain).connect(master);
-  osc.start(start);
-  osc.stop(start + 0.2);
-}
-
-/** A short band-passed noise burst — the backbeat snare. */
-function snare(start: number, peak: number): void {
-  if (!ctx || !master || !noiseBuffer) return;
-  const src = ctx.createBufferSource();
-  src.buffer = noiseBuffer;
-  const bp = ctx.createBiquadFilter();
-  bp.type = 'bandpass';
-  bp.frequency.value = 1900;
-  bp.Q.value = 0.7;
-  const gain = ctx.createGain();
-  gain.gain.setValueAtTime(peak, start);
-  gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.13);
-  src.connect(bp).connect(gain).connect(master);
-  src.start(start);
-  src.stop(start + 0.15);
-}
-
-// A 32-step, two-phrase riff in A Phrygian-dominant — the "exotic" scale that
-// reads as cantina/klezmer without being anyone's tune. A is the call, B the
-// higher answer with a little turnaround. `null` is a rest.
+// An ORIGINAL bluesy-swing tune over a I–IV–I–V loop (C7 · F7 · C7 · G7) — the
+// cantina band's idiom, not its melody. 32 swung eighth-notes = 4 bars; even
+// steps land on the beat, odd steps are the swung up-beat. `null` is a rest.
 const LEAD: (number | null)[] = [
-  // A — the call
-  81, null, 80, 81, 76, null, 77, 76, 73, null, 72, 73, 69, null, 76, 77,
-  // B — the higher answer + turnaround
-  88, null, 86, 85, 81, null, 82, 81, 77, null, 76, 73, 74, 73, 70, 69,
+  76, 79, null, 76, 72, null, 75, 76, // C7
+  77, 81, null, 77, 75, 72, null, 74, // F7
+  79, null, 81, 79, 76, null, 72, 75, // C7
+  74, 77, 79, null, 71, 74, 77, null, // G7
 ];
-// A walking bass in eighth notes, climbing under B to lift the answer.
+const SCOOP = new Set([0, 4, 8, 12, 16, 24]); // lead notes that scoop up
+// A walking upright bass: one quarter note per beat (the even steps).
 const BASS: (number | null)[] = [
-  45, null, 41, null, 40, null, 41, null, 45, null, 41, null, 40, null, 43, null,
-  45, null, 47, null, 48, null, 52, null, 53, null, 52, null, 48, null, 47, null,
+  36, null, 38, null, 40, null, 43, null,
+  41, null, 43, null, 45, null, 48, null,
+  36, null, 40, null, 43, null, 45, null,
+  43, null, 41, null, 40, null, 38, null,
+];
+// Guide tones (3rd, 7th) per bar for the off-beat comp stabs.
+const COMP: number[][] = [
+  [64, 70], // C7 — E, B♭
+  [69, 75], // F7 — A, E♭
+  [64, 70], // C7 — E, B♭
+  [71, 77], // G7 — B, F
 ];
 
-const STEP_DUR = 0.13; // ~115 bpm in sixteenths
-const SWING = 0.035; // delay odd steps for a lazy swing
+const BEAT = 0.32; // ~187 bpm, bouncy
+const SWING = 0.64; // the on-beat eighth takes 64% of the beat (triplet-ish)
 
 function scheduleStep(i: number, when: number): void {
-  const inB = i >= 16;
-  const lead = LEAD[i];
-  if (lead != null) {
-    blip(mtof(lead), when, STEP_DUR * 1.7, 'square', 0.5, true);
-    // An octave pad thickens the B answer.
-    if (inB) blip(mtof(lead - 12), when, STEP_DUR * 2.3, 'triangle', 0.16);
+  const note = LEAD[i];
+  if (note != null) {
+    lead(mtof(note), when, BEAT * (i % 2 === 0 ? 0.5 : 0.32), 0.4, SCOOP.has(i));
   }
-  const bass = BASS[i];
-  if (bass != null) blip(mtof(bass), when, STEP_DUR * 2.4, 'triangle', 0.62);
-  // Kit: kick on beats 1 & 3, snare on 2 & 4, hats on the off-beats.
-  if (i % 8 === 0) kick(when, 0.9);
-  else if (i % 8 === 4) snare(when, 0.45);
-  if (i % 2 === 1) hat(when, i % 4 === 3 ? 0.16 : 0.09);
+  const b = BASS[i];
+  if (b != null) bass(mtof(b), when, BEAT * 0.9, 0.5);
+  const bar = Math.floor(i / 8) % 4;
+  // Comp stabs on the "and" of beats 2 & 4.
+  if (i % 4 === 3) comp(COMP[bar]!.map(mtof), when, 0.14);
+  // Brushed kit: feathered kick on beats 1 & 3, brush on 2 & 4, swing ride.
+  if (i % 8 === 0 || i % 8 === 4) kick(when, 0.42);
+  if (i % 8 === 2 || i % 8 === 6) brush(when, 0.26);
+  if (i % 2 === 0 || i % 4 === 3) ride(when, i % 8 === 0 ? 0.09 : 0.06);
 }
 
 function tick(): void {
   if (!ctx || !running) return;
-  while (nextStepTime < ctx.currentTime + 0.18) {
-    const swung = step % 2 === 1 ? nextStepTime + SWING : nextStepTime;
-    scheduleStep(step, swung);
-    nextStepTime += STEP_DUR;
+  while (nextStepTime < ctx.currentTime + 0.2) {
+    scheduleStep(step, nextStepTime);
+    // Triplet shuffle: the on-beat eighth is long, the up-beat short.
+    nextStepTime += step % 2 === 0 ? BEAT * SWING : BEAT * (1 - SWING);
     step = (step + 1) % LEAD.length;
   }
   loopTimer = setTimeout(tick, 40);
@@ -235,7 +289,7 @@ export function enterCantina(): void {
   if (master) {
     master.gain.cancelScheduledValues(c.currentTime);
     master.gain.setValueAtTime(0.0001, c.currentTime);
-    master.gain.exponentialRampToValueAtTime(0.16, c.currentTime + 0.8);
+    master.gain.exponentialRampToValueAtTime(0.15, c.currentTime + 0.8);
   }
   tick();
 }

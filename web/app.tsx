@@ -840,7 +840,6 @@ export function App() {
                 <select
                   value={unit}
                   onChange={(e) => changeUnit(e.target.value as Unit)}
-                  aria-label="Unit"
                 >
                   <option value="paragraphs">Paragraphs</option>
                   <option value="sentences">Sentences</option>

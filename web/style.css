@@ -37,7 +37,7 @@ body {
   --paper-2: #e7dcc2;
   --ink: #211b10;
   --ink-soft: #5d513a;
-  --ink-faint: #8a7c5e;
+  --ink-faint: #6b5f40;
   --line: rgba(74, 60, 30, 0.22);
   --line-strong: rgba(74, 60, 30, 0.42);
   --field: rgba(255, 252, 244, 0.6);
@@ -499,7 +499,6 @@ body {
   text-transform: none;
   letter-spacing: 0;
   font-weight: 500;
-  opacity: 0.8;
 }
 .field-label .out {
   font-family: var(--mono);
@@ -517,6 +516,12 @@ select,
   color: var(--ink);
   font-family: var(--serif);
   font-size: calc(0.96rem * var(--fs));
+}
+/* Native option popups don't inherit the translucent control background, so
+   give them a solid, readable pairing in every theme. */
+select option {
+  color: var(--ink);
+  background-color: var(--paper);
 }
 .field-label .out,
 select,

@@ -230,6 +230,40 @@ yass-ipsum --lore                           # the obscure origins of lorem ipsum
 yass-ipsum --seed jabba                      # 🥚 ...what's this?
 ```
 
+## 🤖 MCP server (use it from AI agents)
+
+The generator also ships as a **[Model Context Protocol](https://modelcontextprotocol.io)
+server**, so AI assistants — Claude Desktop, Cursor, and any MCP-capable client —
+can produce themed placeholder text as a tool call. The server speaks JSON-RPC
+over stdio and, true to the library, has **zero runtime dependencies** (no MCP
+SDK — the protocol is implemented by hand).
+
+It exposes three tools:
+
+| Tool             | What it does                                                                |
+| ---------------- | --------------------------------------------------------------------------- |
+| `generate_ipsum` | Generate text — `theme`, `units`, `count`, `seed`, `temperature`, `format`. |
+| `list_themes`    | Discover the available voices.                                              |
+| `theme_lore`     | Read a theme's origin story.                                                |
+
+Point your client at the `yass-ipsum-mcp` command. For Claude Desktop, add this
+to `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "yass-ipsum": {
+      "command": "npx",
+      "args": ["-y", "yass-kween-dolor-ipsum", "yass-ipsum-mcp"]
+    }
+  }
+}
+```
+
+Then ask the assistant for "three pirate paragraphs of lorem ipsum, seed ahoy"
+and it'll call the tool. Because output is seed-deterministic, results stay
+reproducible across runs.
+
 ## 🌐 Web demo
 
 `npm run dev` starts a Vite dev server with an interactive playground: pick a

@@ -1986,11 +1986,91 @@ summary:focus-visible,
 }
 
 /* ---------- plain mode: bare-bones, high-contrast dev view ----------
-   Re-themes through the CSS variables so every element adapts, then
-   flattens the editorial flourishes (gradients, drop-cap, serif). */
-#app[data-plain='1'] {
-  /* `!important` is needed because appStyle sets --voice inline on #app, and
-     inline declarations otherwise beat this attribute-selector rule. */
+   Structural rules (mono font, flat surfaces, no flourishes) apply to both
+   palettes via [data-plain]; the light/dark blocks below only set colors, so
+   every element re-themes through the CSS variables. */
+#app[data-plain] {
+  color: var(--ink);
+  font-family: var(--mono);
+}
+#app[data-plain] .bg {
+  display: none;
+}
+#app[data-plain] .dek,
+#app[data-plain] .mast-top .meta,
+#app[data-plain] .lore {
+  display: none;
+}
+#app[data-plain] .wordmark {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 4vw, 2.1rem);
+  letter-spacing: -0.01em;
+}
+#app[data-plain] .wordmark .amp {
+  font-style: normal;
+  color: var(--ink);
+}
+#app[data-plain] .rule.double {
+  border-top: none;
+  border-bottom: 1px solid var(--line);
+  padding-top: 0;
+}
+#app[data-plain] .composer {
+  border-radius: 4px;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+#app[data-plain] .chip,
+#app[data-plain] .view-seg button,
+#app[data-plain] .btn,
+#app[data-plain] .text-in,
+#app[data-plain] select,
+#app[data-plain] .icon-btn,
+#app[data-plain] .op-copy,
+#app[data-plain] .badge,
+#app[data-plain] .recent-item,
+#app[data-plain] .cmp-card,
+#app[data-plain] .plain-toggle {
+  border-radius: 3px;
+  box-shadow: none;
+  font-family: var(--mono);
+}
+#app[data-plain] .chip.active,
+#app[data-plain] .view-seg button.on,
+#app[data-plain] .btn-primary {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--card);
+}
+#app[data-plain] .output {
+  font-family: var(--mono);
+  font-size: calc(0.98rem * var(--fs));
+  line-height: 1.7;
+}
+#app[data-plain] .output p.lead:first-letter {
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  float: none;
+  margin: 0;
+  color: inherit;
+}
+#app[data-plain] .output p {
+  animation: none;
+}
+#app[data-plain] .cicero {
+  border: none;
+  text-decoration: none;
+  background: none;
+  color: inherit;
+  cursor: text;
+}
+
+/* Plain — light palette (default). `!important` on --voice beats the inline
+   --voice that appStyle sets on #app. */
+#app[data-plain='light'] {
   --voice: #334155 !important;
   --accent: #334155;
   --ink: #15171c;
@@ -2001,80 +2081,18 @@ summary:focus-visible,
   --field: #ffffff;
   --card: #ffffff;
   background: #fbfbf9;
-  color: var(--ink);
-  font-family: var(--mono);
 }
-#app[data-plain='1'] .bg {
-  display: none;
-}
-#app[data-plain='1'] .dek,
-#app[data-plain='1'] .mast-top .meta,
-#app[data-plain='1'] .lore {
-  display: none;
-}
-#app[data-plain='1'] .wordmark {
-  font-family: var(--mono);
-  font-weight: 700;
-  font-size: clamp(1.5rem, 4vw, 2.1rem);
-  letter-spacing: -0.01em;
-}
-#app[data-plain='1'] .wordmark .amp {
-  font-style: normal;
-  color: var(--ink);
-}
-#app[data-plain='1'] .rule.double {
-  border-top: none;
-  border-bottom: 1px solid var(--line);
-  padding-top: 0;
-}
-#app[data-plain='1'] .composer {
-  border-radius: 4px;
-  box-shadow: none;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-}
-#app[data-plain='1'] .chip,
-#app[data-plain='1'] .view-seg button,
-#app[data-plain='1'] .btn,
-#app[data-plain='1'] .text-in,
-#app[data-plain='1'] select,
-#app[data-plain='1'] .icon-btn,
-#app[data-plain='1'] .op-copy,
-#app[data-plain='1'] .badge,
-#app[data-plain='1'] .recent-item,
-#app[data-plain='1'] .cmp-card,
-#app[data-plain='1'] .plain-toggle {
-  border-radius: 3px;
-  box-shadow: none;
-  font-family: var(--mono);
-}
-#app[data-plain='1'] .chip.active,
-#app[data-plain='1'] .view-seg button.on,
-#app[data-plain='1'] .btn-primary {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: #ffffff;
-}
-#app[data-plain='1'] .output {
-  font-family: var(--mono);
-  font-size: calc(0.98rem * var(--fs));
-  line-height: 1.7;
-}
-#app[data-plain='1'] .output p.lead:first-letter {
-  font-size: inherit;
-  font-weight: inherit;
-  line-height: inherit;
-  float: none;
-  margin: 0;
-  color: inherit;
-}
-#app[data-plain='1'] .output p {
-  animation: none;
-}
-#app[data-plain='1'] .cicero {
-  border: none;
-  text-decoration: none;
-  background: none;
-  color: inherit;
-  cursor: text;
+
+/* Plain — dark palette */
+#app[data-plain='dark'] {
+  --voice: #93a4c0 !important;
+  --accent: #93a4c0;
+  --ink: #e7e8ea;
+  --ink-soft: #b3b7c0;
+  --ink-faint: #868b95;
+  --line: #2b2e36;
+  --line-strong: #3d414b;
+  --field: #181a1f;
+  --card: #14151a;
+  background: #0f1013;
 }

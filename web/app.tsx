@@ -48,6 +48,8 @@ interface Tweaks {
   tint: boolean;
   /** Bare-bones, high-contrast dev view: system font, no decoration. */
   plain: boolean;
+  /** Dark palette for the plain view (light otherwise). */
+  plainDark: boolean;
 }
 const DEFAULT_TWEAKS: Tweaks = {
   surface: 'slate',
@@ -55,6 +57,7 @@ const DEFAULT_TWEAKS: Tweaks = {
   density: 'regular',
   tint: true,
   plain: false,
+  plainDark: false,
 };
 const SURFACES: Surface[] = ['slate', 'paper', 'aurora'];
 const FACES: Face[] = ['spectral', 'garamond', 'newsreader'];
@@ -123,6 +126,15 @@ function writeStore(key: string, value: unknown): void {
   }
 }
 
+/** The OS color-scheme preference, used as the plain view's first default. */
+function prefersDark(): boolean {
+  return (
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-color-scheme: dark)').matches
+  );
+}
+
 function loadTweaks(): Tweaks {
   const t = readStore<Partial<Tweaks>>(TWEAKS_KEY, {});
   return {
@@ -133,6 +145,7 @@ function loadTweaks(): Tweaks {
       t.density && DENSITIES.includes(t.density) ? t.density : DEFAULT_TWEAKS.density,
     tint: t.tint !== false,
     plain: t.plain === true,
+    plainDark: typeof t.plainDark === 'boolean' ? t.plainDark : prefersDark(),
   };
 }
 
@@ -765,7 +778,7 @@ export function App() {
       data-type={tweaks.face}
       data-density={tweaks.density}
       data-tint={tweaks.tint ? undefined : 'off'}
-      data-plain={tweaks.plain ? '1' : undefined}
+      data-plain={tweaks.plain ? (tweaks.plainDark ? 'dark' : 'light') : undefined}
       data-egg={eggActive ? '1' : undefined}
       data-pride={pride ? '1' : undefined}
       style={appStyle}
@@ -785,6 +798,17 @@ export function App() {
             <span>A field guide to themed placeholder text</span>
             <span className="mast-right">
               <span className="meta">Est. Cicero, XLV B.C.</span>
+              {tweaks.plain && (
+                <button
+                  type="button"
+                  className="plain-toggle"
+                  aria-pressed={tweaks.plainDark}
+                  title="Switch the plain view between light and dark"
+                  onClick={() => setTweaks((t) => ({ ...t, plainDark: !t.plainDark }))}
+                >
+                  {tweaks.plainDark ? '☾ Dark' : '☀ Light'}
+                </button>
+              )}
               <button
                 type="button"
                 className="plain-toggle"

@@ -1425,6 +1425,17 @@ export function App() {
           role="presentation"
         >
           <div className="egg-suns" aria-hidden="true" />
+          <button
+            type="button"
+            className="egg-close"
+            aria-label="Close"
+            onClick={(e) => {
+              e.stopPropagation();
+              setEggBurst(false);
+            }}
+          >
+            &times;
+          </button>
           <div className="egg-inner">
             <div className="egg-laugh">Ho ho ho ho&hellip;</div>
             <JabbaHutt />
@@ -1436,7 +1447,7 @@ export function App() {
               &laquo; bo shuda &raquo; &mdash; <span>back off, lesser being</span>
             </div>
             <div className="egg-skip">
-              &#128266; live-synth cantina &middot; tap to enter
+              &#128266; live-synth cantina &middot; tap anywhere to close
             </div>
           </div>
         </div>
@@ -1448,6 +1459,17 @@ export function App() {
           onClick={() => setPrideBurst(false)}
           role="presentation"
         >
+          <button
+            type="button"
+            className="egg-close"
+            aria-label="Close"
+            onClick={(e) => {
+              e.stopPropagation();
+              setPrideBurst(false);
+            }}
+          >
+            &times;
+          </button>
           <div className="pride-flag" aria-hidden="true" />
           <div className="pride-inner">
             <div className="pride-emoji">🏳️‍🌈</div>

@@ -84,4 +84,19 @@ describe('web demo (jsdom integration)', () => {
     fireEvent.click(schemeButton(c));
     expect(schemeButton(c).textContent).not.toBe(before);
   });
+
+  it('the Huttese seed summons the egg overlay, and its close button dismisses it', () => {
+    const c = renderAt('?theme=corporate&seed=t');
+    expect(c.querySelector('.egg-burst')).toBeNull();
+    // Typing the secret seed reveals Jabba (audio is a no-op without AudioContext).
+    fireEvent.change(c.querySelector('input[aria-label="Seed"]')!, {
+      target: { value: 'jabba' },
+    });
+    const burst = c.querySelector('.egg-burst');
+    expect(burst).not.toBeNull();
+    const close = burst!.querySelector<HTMLButtonElement>('.egg-close');
+    expect(close).not.toBeNull();
+    fireEvent.click(close!);
+    expect(c.querySelector('.egg-burst')).toBeNull();
+  });
 });

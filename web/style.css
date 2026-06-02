@@ -1174,6 +1174,8 @@ select:focus,
   z-index: 100;
   display: grid;
   place-items: center;
+  padding: max(18px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right))
+    max(18px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
   background: radial-gradient(120% 120% at 50% 40%, #2a2410 0%, #0a0d06 60%, #000 100%);
   overflow: hidden;
   cursor: pointer;
@@ -1237,8 +1239,46 @@ select:focus,
   text-transform: uppercase;
   letter-spacing: 0.22em;
   font-size: 0.66rem;
-  color: rgba(246, 237, 210, 0.5);
+  color: rgba(246, 237, 210, 0.62);
   margin-top: 2.2em;
+}
+/* Explicit close affordance for the full-screen overlays. Tap-anywhere and
+   Escape both dismiss, but a visible ✕ is discoverable on touch (no Escape key)
+   and gives keyboard/AT users a focusable control. Sits clear of notches via
+   the safe-area insets. */
+.egg-close {
+  position: absolute;
+  top: max(14px, env(safe-area-inset-top));
+  right: max(14px, env(safe-area-inset-right));
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid rgba(246, 237, 210, 0.28);
+  border-radius: 999px;
+  background: rgba(10, 8, 4, 0.45);
+  color: #f6edd2;
+  font-family: var(--sans);
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
+}
+.egg-close:hover {
+  background: rgba(10, 8, 4, 0.7);
+  border-color: rgba(246, 237, 210, 0.55);
+}
+.egg-close:focus-visible {
+  outline: 2px solid #f6edd2;
+  outline-offset: 2px;
 }
 @keyframes eggIn {
   from {
@@ -1783,24 +1823,34 @@ summary:focus-visible,
 
 /* ---------- mobile ---------- */
 @media (max-width: 680px) {
-  /* Compact the whole vertical rhythm on phones. Touch targets stay comfortable
-     via the fixed paddings in the pointer:coarse block below. */
+  /* Compact the whole vertical rhythm on phones so the controls surface sooner:
+     the masthead + dek used to fill the entire first screen before you reached
+     a single control. Touch targets stay comfortable via the fixed paddings in
+     the pointer:coarse block below. */
   #app {
-    --u: 0.82;
-  }
-  .dek {
-    font-size: 0.95rem;
-    line-height: 1.45;
+    --u: 0.74;
   }
   .page {
-    padding: calc(26px * var(--u)) 16px calc(44px * var(--u));
+    padding: calc(20px * var(--u)) 16px calc(40px * var(--u));
+  }
+  .masthead {
+    margin-bottom: calc(18px * var(--u));
   }
   .mast-top {
     font-size: calc(10px * var(--fs));
     letter-spacing: 0.16em;
+    padding-bottom: calc(10px * var(--u));
   }
   .wordmark {
-    font-size: clamp(2.4rem, 13vw, 4rem);
+    font-size: clamp(2.3rem, 12vw, 3.7rem);
+    margin: calc(4px * var(--u)) 0 calc(7px * var(--u));
+  }
+  .dek {
+    font-size: 0.92rem;
+    line-height: 1.4;
+  }
+  .rule {
+    margin-top: calc(16px * var(--u));
   }
   .cmp-grid {
     grid-template-columns: 1fr;
@@ -1808,7 +1858,27 @@ summary:focus-visible,
 }
 @media (max-width: 560px) {
   .composer {
-    padding: 18px 15px;
+    padding: 16px 14px;
+    margin-bottom: calc(22px * var(--u));
+  }
+  .dek {
+    font-size: 0.88rem;
+  }
+  /* Pack the 17 voice chips into fewer rows so the picker isn't a full screen. */
+  .sec-label {
+    margin-bottom: calc(9px * var(--u));
+  }
+  .voices {
+    gap: 6px;
+  }
+  .chip {
+    font-size: 0.84rem;
+  }
+  .voice-blurb {
+    margin-top: calc(8px * var(--u));
+  }
+  .group {
+    margin-bottom: calc(18px * var(--u));
   }
   .shape {
     grid-template-columns: 1fr;
@@ -1852,6 +1922,18 @@ summary:focus-visible,
   .egg-title {
     font-size: clamp(2.6rem, 19vw, 5rem);
   }
+  /* Jabba is the centerpiece — let him loom larger on phones (the base
+     33vw resolved to a meek ~130px). The max-height block below still shrinks
+     him in landscape so the overlay never clips. */
+  .hutt {
+    width: clamp(184px, 52vw, 232px);
+  }
+  .egg-inner {
+    padding: 18px;
+  }
+  .egg-sub {
+    margin-top: 0.6em;
+  }
   /* Let the specimen stats and export sit on their own row, full width. */
   .sp-meta {
     width: 100%;
@@ -1865,10 +1947,10 @@ summary:focus-visible,
     font-size: clamp(2rem, 15vw, 3rem);
   }
   .voices {
-    gap: 6px;
+    gap: 5px;
   }
   .chip {
-    padding: 7px 11px;
+    padding: 8px 10px;
     font-size: 0.8rem;
   }
   .badge {
@@ -1882,13 +1964,14 @@ summary:focus-visible,
   }
 }
 
-/* Bigger, comfier hit targets on touch devices (≈44px). */
+/* Comfortable hit targets on touch devices while keeping the chip grid dense:
+   ~36px tall clears the WCAG 2.5.8 (AA) 24px minimum with margin to spare. */
 @media (pointer: coarse) {
   .chip {
-    padding: 10px 14px;
+    padding: 9px 12px;
   }
   .view-seg button {
-    padding: 9px 16px;
+    padding: 8px 14px;
   }
   .export button {
     padding: 8px 12px;
@@ -2000,6 +2083,10 @@ summary:focus-visible,
 @media (hover: none) {
   .op-copy {
     opacity: 0.5;
+  }
+  /* The "C copy · S shuffle" keyboard hint is meaningless without a keyboard. */
+  .kbd-hint {
+    display: none;
   }
 }
 
@@ -2119,7 +2206,14 @@ summary:focus-visible,
 }
 
 /* Plain — light palette (default). `!important` on --voice beats the inline
-   --voice that appStyle sets on #app. */
+   --voice that appStyle sets on #app.
+   --paper MUST track the plain background: it's the inverted half of the
+   --ink/--paper pair, used by the word tooltip (.cicero::after) and native
+   <select> option popups. Plain mode overrides --ink but the surface (data-bg)
+   still drives --paper, and the two controls are independent — so without this
+   a dark plain scheme over a light surface (or vice-versa) renders the tooltip
+   nearly invisible (e.g. cream text on near-white). Pinning --paper here keeps
+   the bubble high-contrast in every plain × surface combination. */
 #app[data-plain='light'] {
   --voice: #334155 !important;
   --accent: #334155;
@@ -2130,6 +2224,7 @@ summary:focus-visible,
   --line-strong: #bcbcb3;
   --field: #ffffff;
   --card: #ffffff;
+  --paper: #fbfbf9;
   background: #fbfbf9;
 }
 
@@ -2144,5 +2239,6 @@ summary:focus-visible,
   --line-strong: #3d414b;
   --field: #181a1f;
   --card: #14151a;
+  --paper: #0f1013;
   background: #0f1013;
 }

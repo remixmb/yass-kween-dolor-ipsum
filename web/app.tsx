@@ -295,54 +295,69 @@ function initialState(): InitialState {
   };
 }
 
-/** An original, stylized Hutt — no copyrighted artwork, just shapes. */
+/** An original, stylized Hutt — no copyrighted artwork, just shapes: a fat
+ *  slug-lord with hooded eyes and a wide sneer. Breathes and blinks at rest. */
 function JabbaHutt() {
   return (
-    <svg className="hutt" viewBox="0 0 220 170" role="img" aria-label="A Hutt awakens">
+    <svg className="hutt" viewBox="0 0 240 212" role="img" aria-label="A Hutt awakens">
       <defs>
-        <radialGradient id="huttBody" cx="44%" cy="32%" r="78%">
-          <stop offset="0%" stopColor="#cdb87a" />
-          <stop offset="55%" stopColor="#9a9a52" />
-          <stop offset="100%" stopColor="#5f6b34" />
+        <linearGradient id="huttBody" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#cdb56e" />
+          <stop offset="48%" stopColor="#9f9043" />
+          <stop offset="100%" stopColor="#5b5226" />
+        </linearGradient>
+        <radialGradient id="huttSheen" cx="38%" cy="26%" r="44%">
+          <stop offset="0%" stopColor="#fff3cf" stopOpacity="0.5" />
+          <stop offset="100%" stopColor="#fff3cf" stopOpacity="0" />
         </radialGradient>
       </defs>
-      <path
-        className="hutt-body"
-        d="M110 20 C58 20 24 58 24 104 C24 148 64 164 110 164 C156 164 196 148 196 104 C196 58 162 20 110 20 Z"
-        fill="url(#huttBody)"
-        stroke="#3f4a22"
-        strokeWidth="3"
-      />
-      <ellipse cx="110" cy="122" rx="64" ry="34" fill="#c9b988" opacity="0.45" />
-      <g className="hutt-eyes">
-        <ellipse
-          cx="84"
-          cy="74"
-          rx="17"
-          ry="13"
-          fill="#e9d49a"
+      <g className="hutt-body">
+        {/* the slug mound */}
+        <path
+          d="M120 26 C92 26 70 44 66 74 C46 96 30 132 38 164 C46 192 84 202 120 202 C156 202 194 192 202 164 C210 132 194 96 174 74 C170 44 148 26 120 26 Z"
+          fill="url(#huttBody)"
           stroke="#3f4a22"
-          strokeWidth="2.5"
+          strokeWidth="3"
         />
-        <ellipse
-          cx="136"
-          cy="74"
-          rx="17"
-          ry="13"
-          fill="#e9d49a"
-          stroke="#3f4a22"
-          strokeWidth="2.5"
+        {/* pale underbelly + fat folds */}
+        <ellipse cx="120" cy="156" rx="76" ry="46" fill="#d8c489" opacity="0.5" />
+        <path d="M58 140 Q120 160 182 140" stroke="#7c7032" strokeWidth="2.5" fill="none" opacity="0.4" />
+        <path d="M66 170 Q120 188 174 170" stroke="#7c7032" strokeWidth="2.5" fill="none" opacity="0.32" />
+        {/* slimy sheen */}
+        <ellipse cx="98" cy="62" rx="58" ry="42" fill="url(#huttSheen)" />
+        {/* eyes: small, hooded, half-lidded for a scheming glare */}
+        <g className="hutt-eyes">
+          <ellipse cx="96" cy="102" rx="15" ry="12" fill="#e7d68f" stroke="#4a4220" strokeWidth="2" />
+          <ellipse cx="144" cy="102" rx="15" ry="12" fill="#e7d68f" stroke="#4a4220" strokeWidth="2" />
+          <ellipse cx="97" cy="103" rx="5.5" ry="8" fill="#23180a" />
+          <ellipse cx="143" cy="103" rx="5.5" ry="8" fill="#23180a" />
+          <circle cx="93" cy="99" r="1.8" fill="#fffaf0" opacity="0.6" />
+          <circle cx="139" cy="99" r="1.8" fill="#fffaf0" opacity="0.6" />
+          {/* heavy lids drooping over the top half */}
+          <path d="M80 102 Q96 86 112 102 Q96 100 80 102 Z" fill="url(#huttBody)" />
+          <path d="M128 102 Q144 86 160 102 Q144 100 128 102 Z" fill="url(#huttBody)" />
+          <path d="M81 100 Q96 92 111 100" stroke="#4a4220" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+          <path d="M129 100 Q144 92 159 100" stroke="#4a4220" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+        </g>
+        {/* heavy angled brow ridges + a frown crease */}
+        <path d="M73 90 Q96 80 117 89" stroke="#544a22" strokeWidth="9" fill="none" strokeLinecap="round" />
+        <path d="M123 89 Q144 80 167 90" stroke="#544a22" strokeWidth="9" fill="none" strokeLinecap="round" />
+        <path d="M119 83 Q121 92 120 99" stroke="#4a4220" strokeWidth="3" fill="none" strokeLinecap="round" opacity="0.7" />
+        {/* nostrils */}
+        <ellipse cx="111" cy="128" rx="3" ry="5" fill="#3a3115" transform="rotate(-16 111 128)" />
+        <ellipse cx="129" cy="128" rx="3" ry="5" fill="#3a3115" transform="rotate(16 129 128)" />
+        {/* jutting lower lip / jowl */}
+        <path d="M64 162 Q120 154 176 162 Q174 192 120 196 Q66 192 64 162 Z" fill="#b18a55" opacity="0.92" />
+        {/* wide down-turned maw — the sneer */}
+        <path
+          className="hutt-mouth"
+          d="M74 161 Q120 146 166 161 Q120 156 74 161 Z"
+          fill="#23170b"
         />
-        <ellipse cx="84" cy="76" rx="4.5" ry="8" fill="#2a2410" />
-        <ellipse cx="136" cy="76" rx="4.5" ry="8" fill="#2a2410" />
+        {/* drooping corner creases */}
+        <path d="M71 156 Q66 165 73 171" stroke="#5c4a2c" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.6" />
+        <path d="M169 156 Q174 165 167 171" stroke="#5c4a2c" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.6" />
       </g>
-      <ellipse cx="100" cy="105" rx="5" ry="4" fill="#4a3f22" />
-      <ellipse cx="120" cy="105" rx="5" ry="4" fill="#4a3f22" />
-      <path
-        className="hutt-mouth"
-        d="M68 124 Q110 152 152 124 Q110 140 68 124 Z"
-        fill="#3a2a16"
-      />
     </svg>
   );
 }

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://remixmb.github.io/yass-kween-dolor-ipsum/sitemap.xml

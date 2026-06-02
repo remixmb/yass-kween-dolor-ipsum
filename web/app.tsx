@@ -93,6 +93,12 @@ const KONAMI = [
   'a',
 ];
 
+/** The non-standard `beforeinstallprompt` event (absent from the DOM lib). */
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+
 function rollKey(r: Omit<Roll, 'key'>): string {
   return [r.themeId, r.blend, r.unit, r.count, r.seed, r.lorem ? 1 : 0].join('|');
 }
@@ -334,6 +340,7 @@ export function App() {
   const [toast, setToast] = useState('');
   const [eggBurst, setEggBurst] = useState(false);
   const [prideBurst, setPrideBurst] = useState(false);
+  const [installEvt, setInstallEvt] = useState<BeforeInstallPromptEvent | null>(null);
   const [genId, setGenId] = useState(0);
 
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -506,6 +513,55 @@ export function App() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [showToast]);
+
+  // Quick-use shortcuts: C copies, S shuffles — but never while typing in a
+  // field, with a modifier held (so Cmd/Ctrl+C still works), or over an overlay.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey || eggBurst || prideBurst) return;
+      const el = document.activeElement as HTMLElement | null;
+      const tag = el?.tagName;
+      if (
+        tag === 'INPUT' ||
+        tag === 'TEXTAREA' ||
+        tag === 'SELECT' ||
+        el?.isContentEditable
+      )
+        return;
+      const k = e.key.toLowerCase();
+      if (k === 'c') {
+        e.preventDefault();
+        copy(copyText, 'Copied ✨');
+      } else if (k === 's') {
+        e.preventDefault();
+        doShuffle();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [copyText, eggBurst, prideBurst]);
+
+  // Surface an Install button only when the browser reports the app installable.
+  useEffect(() => {
+    const onPrompt = (e: Event) => {
+      e.preventDefault();
+      setInstallEvt(e as BeforeInstallPromptEvent);
+    };
+    const onInstalled = () => setInstallEvt(null);
+    window.addEventListener('beforeinstallprompt', onPrompt);
+    window.addEventListener('appinstalled', onInstalled);
+    return () => {
+      window.removeEventListener('beforeinstallprompt', onPrompt);
+      window.removeEventListener('appinstalled', onInstalled);
+    };
+  }, []);
+
+  async function installApp() {
+    if (!installEvt) return;
+    await installEvt.prompt();
+    await installEvt.userChoice.catch(() => undefined);
+    setInstallEvt(null);
+  }
 
   function selectTheme(id: string) {
     const th = getTheme(id);
@@ -868,6 +924,9 @@ export function App() {
               &#128279; Copy link
             </button>
           </div>
+          <p className="kbd-hint" aria-hidden="true">
+            <kbd>C</kbd> copy &middot; <kbd>S</kbd> shuffle
+          </p>
         </section>
 
         {devPanel && (
@@ -1116,6 +1175,11 @@ export function App() {
           <span>
             Reproducible &amp; shareable &mdash; every result is encoded in the link.
           </span>
+          {installEvt && (
+            <button type="button" className="install-btn" onClick={installApp}>
+              &#11015; Install app
+            </button>
+          )}
           <a
             href="https://github.com/remixmb/yass-kween-dolor-ipsum"
             target="_blank"

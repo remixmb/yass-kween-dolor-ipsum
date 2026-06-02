@@ -36,12 +36,13 @@ of lorem ipsum. Generate filler in **seventeen** distinct voices — from sassy
 - **Seventeen hand-tuned voices** (plus one hidden 🥚), each with its own vocabulary, openers, interjections, and accent color.
 - **Blended voices** — the signature themes are _fusions_: **yassified Latin** and **huttese'd Latin**, built on Cicero's genuine lorem ipsum source and transformed word-by-word.
 - **A Latin ↔ Voice blend dial** — slide from raw, untouched Cicero Latin to maximally extra ✨ themed voice; in the demo it recolors the whole page toward each voice's accent. (`temperature` in the API, the "Blend" slider in the demo.)
-- **Per-word Cicero hover** — `generateRich()` returns tokens that carry the Latin root each blended word came from, so the demo can reveal `📜 dolorem · pain` on hover.
+- **Per-word glosses, both ways** — `generateRich()` returns tokens carrying the Latin root behind each blended word (`📜 dolorem · pain`), and the plain-spoken voices ship a **jargon glossary**, so the demo decodes buzzwords too (`💡 synergy · combined output, allegedly greater than the sum`).
+- **An editorial web playground** — a 17-voice keyboard radiogroup, a blend dial that recolors the whole page, a **compare gallery** across every voice at one seed, a **recent-rolls** history, **`.txt` / `.json` export**, and shareable permalinks.
 - **Deterministic output** — pass a `seed` and get byte-for-byte reproducible text. Great for tests and shareable permalinks.
 - **Three units** — `words`, `sentences`, or `paragraphs`, plus optional `text` or `html` output (HTML is escaped).
 - **Zero runtime dependencies.** The core is plain, portable TypeScript; the React demo is dev-only and the published package excludes it.
 - **Works everywhere** — library (ESM + CJS), CLI, and browser. Ships full type declarations.
-- **Tested & typed** — 84 tests, ~98% coverage, strict TypeScript, ESLint + Prettier, CI.
+- **Tested & typed** — 89 tests, ~98% line coverage, strict TypeScript, ESLint + Prettier, CI.
 
 ## 🎭 Themes
 
@@ -164,8 +165,13 @@ generate({ seed: 'jabba', units: 'sentences', count: 1 });
 // → "Ee youdsa yatuka mooie wooluptatem, murishani, noostrum numkwam!"  (🐸)
 ```
 
-In the web demo, typing `jabba` into the seed field reveals the hidden theme
-chip. _Bo shuda!_
+In the web demo, typing `jabba` into the seed field is a whole moment: a Hutt
+rises, a guttural laugh rolls out, and an 8-bit cantina loop kicks in — all
+**synthesized live in the browser** with the Web Audio API (no audio files,
+nothing copyrighted). _Bo shuda!_
+
+…and that's not the only secret in there. A certain rainbow-flavored seed lights
+the place up too. 🏳️‍🌈
 
 ### Custom themes
 
@@ -227,9 +233,18 @@ yass-ipsum --seed jabba                      # 🥚 ...what's this?
 ## 🌐 Web demo
 
 `npm run dev` starts a Vite dev server with an interactive playground: pick a
-theme, tune the unit/count, slide the temperature dial, and copy the result with
-one click. Build a static bundle with `npm run build:web` (output in
-`dist-web/`).
+theme, tune the unit/count, slide the blend dial, and copy the result with one
+click. Build a static bundle with `npm run build:web` (output in `dist-web/`).
+
+It does more than copy-paste:
+
+- **Compare gallery** — see a same-seed specimen for every voice at once, and click to switch.
+- **Recent rolls** — a history strip of what you've generated; click any to jump back to it.
+- **Export** — download the specimen as **`.txt`** or **`.json`**.
+- **Per-word hover** — reveal Cicero's Latin under blended voices (`📜`) or decode the jargon in the plain-spoken ones (`💡`).
+- **Text / HTML** toggle, with HTML safely escaped.
+- **Keyboard-quick** — press <kbd>C</kbd> to copy, <kbd>S</kbd> to shuffle; fully responsive from phone to desktop.
+- **Installable & offline** — it's a PWA. Add it to your home screen or desktop and it keeps working with no connection — handy filler, always one tap away.
 
 Every result is **reproducible and shareable** — the seed is always shown and
 editable, **🎲 Shuffle** rolls a new one, and **🔗 Copy link** yields a
@@ -275,6 +290,39 @@ test/               # vitest suite (rng, themes, generator, cli)
 | `npm run typecheck` | `tsc --noEmit` in strict mode.                      |
 | `npm run lint`      | ESLint over the project.                            |
 | `npm run check`     | Typecheck + lint + test (CI gate).                  |
+
+## ❓ FAQ
+
+**What is this?**
+A free, open-source **lorem ipsum / placeholder-text generator** — available as a
+zero-dependency TypeScript library, a CLI, and an installable web app. It
+generates dummy text in seventeen themed voices.
+
+**What actually _is_ lorem ipsum?**
+Not gibberish. It's scrambled Latin from Cicero's _de Finibus Bonorum et Malorum_
+(45 BC), a treatise on pleasure and pain — `dolorem ipsum` means "pain itself."
+This generator is built right on that genuine source, so you can dial from raw
+Cicero Latin up to a fully styled voice.
+
+**Is it free?** Yes — MIT-licensed and open source.
+
+**Do I need to install anything?**
+No. Use the **[live web app](https://remixmb.github.io/yass-kween-dolor-ipsum/)**
+in any browser, press <kbd>C</kbd> to copy, and you're done. Developers can also
+`npm install` the library or run the `yass-ipsum` CLI.
+
+**Does it work offline?**
+Yes. The web app is an installable PWA — add it to your home screen or desktop
+and it keeps generating placeholder text with no connection.
+
+**Can I get the same output every time?**
+Yes. Pass a `seed` (in the API/CLI) or share the demo's permalink — output is
+deterministic, so the same seed and options always produce byte-for-byte
+identical text. Great for tests, snapshots, and design reviews.
+
+**Can I add my own theme?**
+Absolutely — a theme is just a small data object. See
+[Custom themes](#custom-themes).
 
 ## 📄 License
 

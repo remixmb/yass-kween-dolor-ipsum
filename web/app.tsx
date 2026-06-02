@@ -1425,6 +1425,14 @@ export function App() {
           role="presentation"
         >
           <div className="egg-suns" aria-hidden="true" />
+          {/* Diegetic "the band is playing" cue — drifting notes, motion-gated
+              to match the audio (both stay still/silent under reduced-motion). */}
+          <div className="egg-notes" aria-hidden="true">
+            <span>&#9834;</span>
+            <span>&#9835;</span>
+            <span>&#9833;</span>
+            <span>&#9839;</span>
+          </div>
           <button
             type="button"
             className="egg-close"
@@ -1447,7 +1455,7 @@ export function App() {
               &laquo; bo shuda &raquo; &mdash; <span>back off, lesser being</span>
             </div>
             <div className="egg-skip">
-              &#128266; live-synth cantina &middot; tap anywhere to close
+              &#127927; live-synth cantina swing &middot; tap anywhere to close
             </div>
           </div>
         </div>

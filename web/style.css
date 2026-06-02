@@ -1280,6 +1280,58 @@ select:focus,
   outline: 2px solid #f6edd2;
   outline-offset: 2px;
 }
+/* Drifting musical notes — a soft, diegetic "the band is swinging" cue. They
+   sit between the sun-glow and the content (no z-index → painted before the
+   later .egg-inner), each floating up and fading on a staggered loop. Hidden
+   under reduced-motion, where the cantina audio is silent too. */
+.egg-notes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.egg-notes span {
+  position: absolute;
+  top: 45%;
+  font-size: clamp(1.3rem, 3.6vw, 2rem);
+  color: #f0cf8e;
+  opacity: 0;
+  text-shadow: 0 0 16px rgba(255, 196, 92, 0.6);
+  animation: eggNote 3.6s ease-in-out infinite;
+}
+.egg-notes span:nth-child(1) {
+  left: 30%;
+  animation-delay: 0s;
+}
+.egg-notes span:nth-child(2) {
+  left: 43%;
+  font-size: clamp(1rem, 2.6vw, 1.5rem);
+  animation-delay: 0.9s;
+}
+.egg-notes span:nth-child(3) {
+  left: 57%;
+  animation-delay: 1.8s;
+}
+.egg-notes span:nth-child(4) {
+  left: 68%;
+  font-size: clamp(1rem, 2.6vw, 1.5rem);
+  animation-delay: 2.7s;
+}
+@keyframes eggNote {
+  0% {
+    transform: translateY(12px) rotate(-6deg);
+    opacity: 0;
+  }
+  18% {
+    opacity: 0.85;
+  }
+  70% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(-128px) rotate(9deg);
+    opacity: 0;
+  }
+}
 @keyframes eggIn {
   from {
     opacity: 0;
@@ -1818,6 +1870,10 @@ summary:focus-visible,
   .icon-btn:hover,
   .cmp-card:hover {
     transform: none;
+  }
+  /* No drifting notes when the cantina is silent (audio is gated the same way). */
+  .egg-notes {
+    display: none;
   }
 }
 

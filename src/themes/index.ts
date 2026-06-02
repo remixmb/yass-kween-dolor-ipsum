@@ -1,5 +1,5 @@
 import type { Theme } from './types.js';
-import { chance, pick, type RandomFn } from '../rng.js';
+import { pick, type RandomFn } from '../rng.js';
 import { LOREM_ORIGIN_WORDS } from './origins.js';
 import { classic } from './classic.js';
 import { yasskween } from './yasskween.js';
@@ -46,8 +46,14 @@ function withLatinBlend(theme: Theme): Theme {
   return {
     ...theme,
     blendBase: LOREM_ORIGIN_WORDS,
-    intensify: (word: string, intensity: number, rng: RandomFn): string =>
-      chance(rng, intensity) ? pick(rng, voice) : word,
+    // Draw a stable per-word threshold and a voice candidate unconditionally, so
+    // each word's Latin→voice swap point is fixed and the dial crossfades
+    // monotonically (no dead zones, no full-text reshuffle as it climbs).
+    intensify: (word: string, intensity: number, rng: RandomFn): string => {
+      const swap = rng() < intensity;
+      const candidate = pick(rng, voice);
+      return swap ? candidate : word;
+    },
   };
 }
 

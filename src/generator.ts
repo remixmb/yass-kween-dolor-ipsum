@@ -163,11 +163,18 @@ function sampleVocab(opts: ResolvedOptions): string {
   return pick(rng, theme.words);
 }
 
-/** Choose a sentence ending; exclamation grows with intensity. */
+/**
+ * Choose a sentence ending; exclamation grows with intensity. Both decision
+ * draws are taken unconditionally so RNG consumption never depends on intensity
+ * — the key to a blend dial that crossfades smoothly instead of reshuffling the
+ * whole text every time a probability flips.
+ */
 function pickEnding(opts: ResolvedOptions): string {
   const { rng, intensity } = opts;
-  if (chance(rng, intensity * 0.5)) return '!';
-  if (chance(rng, 0.1 + intensity * 0.1)) return '?';
+  const exclaim = rng() < intensity * 0.5;
+  const question = rng() < 0.1 + intensity * 0.1;
+  if (exclaim) return '!';
+  if (question) return '?';
   return '.';
 }
 
@@ -195,16 +202,15 @@ function buildSentence(opts: ResolvedOptions, isFirst: boolean): string {
     protectedCount = CLASSIC_OPENING.length;
   }
 
-  // Openers grow more likely as intensity climbs.
+  // Openers grow more likely as intensity climbs. Draw the decision and the
+  // candidate unconditionally (intensity-independent consumption), then use the
+  // opener only when the dial calls for it.
   const openerProbability = 0.1 + intensity * 0.55;
   let opener: string | undefined;
-  if (
-    !opts.startWithLorem &&
-    theme.openers &&
-    theme.openers.length > 0 &&
-    chance(rng, openerProbability)
-  ) {
-    opener = pick(rng, theme.openers);
+  if (!opts.startWithLorem && theme.openers && theme.openers.length > 0) {
+    const showOpener = rng() < openerProbability;
+    const candidate = pick(rng, theme.openers);
+    if (showOpener) opener = candidate;
   }
 
   // Sample words, avoiding immediate repeats, then apply the theme's stylizer.
@@ -252,13 +258,10 @@ function buildParagraph(opts: ResolvedOptions, isFirstParagraph: boolean): strin
   for (let i = 0; i < sentenceCount; i++) {
     const isFirst = isFirstParagraph && i === 0;
     sentences.push(buildSentence(opts, isFirst));
-    if (
-      i < sentenceCount - 1 &&
-      theme.interjections &&
-      theme.interjections.length > 0 &&
-      chance(rng, interjectionProbability)
-    ) {
-      sentences.push(pick(rng, theme.interjections));
+    if (i < sentenceCount - 1 && theme.interjections && theme.interjections.length > 0) {
+      const showInterjection = rng() < interjectionProbability;
+      const candidate = pick(rng, theme.interjections);
+      if (showInterjection) sentences.push(candidate);
     }
   }
   return sentences.join(' ');
@@ -402,13 +405,10 @@ function buildSentenceRich(opts: ResolvedOptions, isFirst: boolean): Token[] {
 
   const openerProbability = 0.1 + intensity * 0.55;
   let opener: string | undefined;
-  if (
-    !opts.startWithLorem &&
-    theme.openers &&
-    theme.openers.length > 0 &&
-    chance(rng, openerProbability)
-  ) {
-    opener = pick(rng, theme.openers);
+  if (!opts.startWithLorem && theme.openers && theme.openers.length > 0) {
+    const showOpener = rng() < openerProbability;
+    const candidate = pick(rng, theme.openers);
+    if (showOpener) opener = candidate;
   }
 
   let previous = '';
@@ -457,13 +457,10 @@ function buildParagraphRich(opts: ResolvedOptions, isFirstParagraph: boolean): T
     for (const tok of buildSentenceRich(opts, isFirstParagraph && i === 0)) {
       out.push(tok);
     }
-    if (
-      i < sentenceCount - 1 &&
-      theme.interjections &&
-      theme.interjections.length > 0 &&
-      chance(rng, interjectionProbability)
-    ) {
-      out.push({ t: pick(rng, theme.interjections), base: null, op: true });
+    if (i < sentenceCount - 1 && theme.interjections && theme.interjections.length > 0) {
+      const showInterjection = rng() < interjectionProbability;
+      const candidate = pick(rng, theme.interjections);
+      if (showInterjection) out.push({ t: candidate, base: null, op: true });
     }
   }
   return out;

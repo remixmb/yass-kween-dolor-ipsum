@@ -1,0 +1,33 @@
+name: Release
+
+# Publish to npm when a GitHub Release is published. Cut a release pointing at a
+# tag like `v1.0.0` (matching package.json's version) and this does the rest.
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  id-token: write # enables npm provenance (supply-chain attestation)
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          registry-url: https://registry.npmjs.org
+          cache: npm
+
+      - run: npm ci
+
+      # `prepublishOnly` (typecheck + lint + test + build) runs automatically as
+      # part of `npm publish`, so a broken build can never reach the registry.
+      - name: Publish
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

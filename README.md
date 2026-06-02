@@ -12,8 +12,10 @@ of lorem ipsum. Generate filler in **seventeen** distinct voices — from sassy
 
 **[▶ Live demo](https://remixmb.github.io/yass-kween-dolor-ipsum/)**
 
+[![npm](https://img.shields.io/npm/v/yass-kween-dolor-ipsum?color=cb3837&logo=npm)](https://www.npmjs.com/package/yass-kween-dolor-ipsum)
 [![CI](https://github.com/remixmb/yass-kween-dolor-ipsum/actions/workflows/ci.yml/badge.svg)](https://github.com/remixmb/yass-kween-dolor-ipsum/actions/workflows/ci.yml)
 [![Deploy web demo](https://github.com/remixmb/yass-kween-dolor-ipsum/actions/workflows/deploy.yml/badge.svg)](https://github.com/remixmb/yass-kween-dolor-ipsum/actions/workflows/deploy.yml)
+[![Zero dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](#-highlights)
 
 [Themes](#-themes) · [Quick start](#-quick-start) · [API](#-api) · [CLI](#️-cli) · [Web demo](#-web-demo) · [Design](#️-design-notes)
 
@@ -357,6 +359,24 @@ identical text. Great for tests, snapshots, and design reviews.
 **Can I add my own theme?**
 Absolutely — a theme is just a small data object. See
 [Custom themes](#custom-themes).
+
+## 📦 Publishing
+
+Releases are automated. The package ships only `dist/`, `README.md`, and
+`LICENSE` (via the `files` allowlist), and `npm publish` is gated by
+`prepublishOnly`, which re-runs the full check + build — so a broken build can
+never reach the registry.
+
+To cut a release:
+
+1. Bump `version` in `package.json` and commit.
+2. Tag and push: `git tag v1.2.3 && git push --tags`.
+3. Publish a **GitHub Release** for that tag.
+
+The [`release` workflow](.github/workflows/release.yml) then publishes to npm
+with [provenance](https://docs.npmjs.com/generating-provenance-statements). It
+needs an `NPM_TOKEN` repository secret (an npm **automation** token) — the only
+one-time setup.
 
 ## 📄 License
 

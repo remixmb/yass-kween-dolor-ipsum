@@ -23,7 +23,7 @@ import {
   DEFAULT_THEME_ID,
 } from './themes/index.js';
 
-const SERVER_INFO = { name: 'yass-ipsum', version: '1.1.0' } as const;
+const SERVER_INFO = { name: 'yass-ipsum', version: '1.2.0' } as const;
 
 /** The MCP revision we advertise when a client doesn't pin one. */
 const DEFAULT_PROTOCOL_VERSION = '2025-06-18';
@@ -89,7 +89,7 @@ export const TOOLS = [
         },
         units: {
           type: 'string',
-          enum: ['words', 'sentences', 'paragraphs'],
+          enum: ['words', 'sentences', 'paragraphs', 'characters'],
           description: 'What to count. Defaults to "paragraphs".',
         },
         count: {
@@ -172,7 +172,8 @@ export function buildOptions(args: Record<string, unknown>): GenerateOptions {
   if (
     args.units === 'words' ||
     args.units === 'sentences' ||
-    args.units === 'paragraphs'
+    args.units === 'paragraphs' ||
+    args.units === 'characters'
   ) {
     options.units = args.units;
   }

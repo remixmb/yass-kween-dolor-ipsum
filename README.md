@@ -108,7 +108,7 @@ ipsum.paragraphs(3, { theme: 'startup' });
 | Option                                                  | Type                                     | Default        | Description                                    |
 | ------------------------------------------------------- | ---------------------------------------- | -------------- | ---------------------------------------------- |
 | `theme`                                                 | `string \| Theme`                        | `'yass-kween'` | Theme id or a custom `Theme` object.           |
-| `units`                                                 | `'words' \| 'sentences' \| 'paragraphs'` | `'paragraphs'` | What to count.                                 |
+| `units`                                                 | `'words' \| 'sentences' \| 'paragraphs' \| 'characters'` | `'paragraphs'` | What to count (`characters` trims to a word boundary).                                 |
 | `count`                                                 | `number`                                 | `3`            | How many units to produce (clamped to ≥ 1).    |
 | `seed`                                                  | `number \| string`                       | —              | Seed for deterministic output.                 |
 | `format`                                                | `'text' \| 'html'`                       | `'text'`       | Plain text or `<p>`-wrapped HTML.              |
@@ -219,8 +219,9 @@ yass-ipsum [options]
   -p, --paragraphs <n>    Generate n paragraphs
   -s, --sentences <n>     Generate n sentences
   -w, --words <n>         Generate n words
+  -C, --characters <n>    Generate n characters (trimmed to a word boundary)
   -c, --count <n>         Count for the chosen unit
-  -u, --units <unit>      words | sentences | paragraphs
+  -u, --units <unit>      words | sentences | paragraphs | characters
       --seed <value>      Seed for reproducible output
   -i, --temperature <n>   Blend temperature, 0–1 (or 0–100). Cold = raw Latin
                           (alias: --intensity, --temp)
@@ -238,6 +239,7 @@ yass-ipsum                                  # three sassy paragraphs
 yass-ipsum --theme corporate --paragraphs 2
 yass-ipsum -t pirate -s 4 --seed ahoy       # reproducible pirate text
 yass-ipsum --words 12 --html
+yass-ipsum --characters 280                 # fit a 280-char budget
 yass-ipsum --temperature 0.1                # cold — raw Latin resurfaces
 yass-ipsum --no-emoji                       # clean placeholder text, no sparkles
 yass-ipsum --lore                           # the obscure origins of lorem ipsum

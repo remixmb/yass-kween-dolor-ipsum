@@ -1,6 +1,6 @@
 {
   "name": "yass-kween-dolor-ipsum",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "A themed placeholder-text generator. Lorem ipsum, but make it iconic — sassy, corporate, pirate, hacker, and more.",
   "type": "module",
   "sideEffects": false,
@@ -65,6 +65,8 @@
     "prepublishOnly": "npm run check && npm run build"
   },
   "devDependencies": {
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/react": "^16.3.2",
     "@types/node": "^22.10.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
@@ -73,6 +75,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "@vitest/coverage-v8": "^2.1.8",
     "eslint": "^9.17.0",
+    "jsdom": "^25.0.1",
     "prettier": "^3.4.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

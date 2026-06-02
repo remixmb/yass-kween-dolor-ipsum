@@ -88,6 +88,13 @@ describe('cli', () => {
     expect(out.trim().split(/\s+/)).toHaveLength(5);
   });
 
+  it('supports the --characters shorthand within budget', () => {
+    const { code, out } = captureRun(['--characters', '120', '--seed', 'x', '-t', 'corporate']);
+    expect(code).toBe(0);
+    expect(out.trim().length).toBeLessThanOrEqual(120);
+    expect(out.trim().length).toBeGreaterThan(0);
+  });
+
   it('emits HTML when --html is set', () => {
     const { code, out } = captureRun(['-p', '1', '--html', '--seed', 'h']);
     expect(code).toBe(0);

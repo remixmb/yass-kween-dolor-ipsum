@@ -29,12 +29,27 @@ const COUNT_DEFAULTS: Record<Unit, number> = {
   paragraphs: 3,
   sentences: 5,
   words: 24,
+  characters: 280,
 };
-const COUNT_MAX: Record<Unit, number> = { paragraphs: 12, sentences: 20, words: 120 };
+const COUNT_MAX: Record<Unit, number> = {
+  paragraphs: 12,
+  sentences: 20,
+  words: 120,
+  characters: 2000,
+};
+// Friendly length presets (Short / Medium / Long) per unit — Cupcake's trick of
+// removing the "how many?" decision while the slider stays for fine control.
+const LENGTH_PRESETS: Record<Unit, [number, number, number]> = {
+  paragraphs: [1, 3, 8],
+  sentences: [2, 5, 12],
+  words: [10, 24, 60],
+  characters: [140, 280, 600],
+};
 const UNIT_SHORT: Record<Unit, string> = {
   paragraphs: 'para',
   sentences: 'sent',
   words: 'words',
+  characters: 'char',
 };
 
 /* ---------- appearance tweaks (persisted) ---------- */
@@ -46,6 +61,20 @@ const SCHEME_CYCLE: Record<PlainScheme, PlainScheme> = {
   auto: 'light',
   light: 'dark',
   dark: 'auto',
+};
+// The public scheme toggle cycles the editorial surface Auto -> Light -> Dark
+// (paper/slate); aurora stays a dev-only choice and reverts to auto on cycle.
+const SURFACE_LABEL: Record<Surface, string> = {
+  auto: '◐ Auto',
+  paper: '☀ Light',
+  slate: '☾ Dark',
+  aurora: '✦ Aurora',
+};
+const SURFACE_PUBLIC_CYCLE: Record<Surface, Surface> = {
+  auto: 'paper',
+  paper: 'slate',
+  slate: 'auto',
+  aurora: 'auto',
 };
 interface Tweaks {
   surface: Surface;
@@ -175,7 +204,9 @@ function loadRecent(): Roll[] {
     if (typeof v.seed !== 'string' || typeof v.themeId !== 'string') continue;
     if (!getTheme(v.themeId)) continue;
     const unit: Unit =
-      v.unit === 'sentences' || v.unit === 'words' ? v.unit : 'paragraphs';
+      v.unit === 'sentences' || v.unit === 'words' || v.unit === 'characters'
+        ? v.unit
+        : 'paragraphs';
     const roll: Omit<Roll, 'key'> = {
       themeId: v.themeId,
       blend: clampInt(Number(v.blend), 0, 100, 50),
@@ -283,7 +314,9 @@ function initialState(): InitialState {
   const p = new URLSearchParams(location.search);
   const unitParam = p.get('units');
   const unit: Unit =
-    unitParam === 'sentences' || unitParam === 'words' ? unitParam : 'paragraphs';
+    unitParam === 'sentences' || unitParam === 'words' || unitParam === 'characters'
+      ? unitParam
+      : 'paragraphs';
   let count = Number(p.get('count'));
   if (!Number.isFinite(count) || count < 1) count = COUNT_DEFAULTS[unit];
   count = Math.min(count, COUNT_MAX[unit]);
@@ -435,6 +468,7 @@ export function App() {
   const voice = displayTheme.accent ?? '#888888';
   const wordCount = plainText.trim().split(/\s+/).filter(Boolean).length;
   const charCount = plainText.length;
+  const byteCount = new TextEncoder().encode(plainText).length;
   const eggActive = displayTheme.id === EASTER_EGG_THEME_ID;
 
   const currentKey = rollKey({
@@ -852,22 +886,26 @@ export function App() {
             <span>A field guide to themed placeholder text</span>
             <span className="mast-right">
               <span className="meta">Est. Cicero, XLV B.C.</span>
-              {tweaks.plain && (
-                <button
-                  type="button"
-                  className="plain-toggle"
-                  title="Plain view color scheme — Auto follows your system"
-                  onClick={() =>
-                    setTweaks((t) => ({ ...t, plainScheme: SCHEME_CYCLE[t.plainScheme] }))
-                  }
-                >
-                  {tweaks.plainScheme === 'auto'
+              <button
+                type="button"
+                className="plain-toggle"
+                title="Color scheme — Auto follows your system"
+                onClick={() =>
+                  setTweaks((t) =>
+                    t.plain
+                      ? { ...t, plainScheme: SCHEME_CYCLE[t.plainScheme] }
+                      : { ...t, surface: SURFACE_PUBLIC_CYCLE[t.surface] },
+                  )
+                }
+              >
+                {tweaks.plain
+                  ? tweaks.plainScheme === 'auto'
                     ? '◐ Auto'
                     : tweaks.plainScheme === 'dark'
                       ? '☾ Dark'
-                      : '☀ Light'}
-                </button>
-              )}
+                      : '☀ Light'
+                  : SURFACE_LABEL[tweaks.surface]}
+              </button>
               <button
                 type="button"
                 className="plain-toggle"
@@ -975,6 +1013,7 @@ export function App() {
                   <option value="paragraphs">Paragraphs</option>
                   <option value="sentences">Sentences</option>
                   <option value="words">Words</option>
+                  <option value="characters">Characters</option>
                 </select>
               </label>
               <label className="field">
@@ -992,6 +1031,25 @@ export function App() {
                     aria-label="Count"
                     aria-valuetext={`${count} ${unit}`}
                   />
+                </div>
+              </label>
+              <label className="field">
+                <span className="field-label">Length</span>
+                <div className="view-seg presets" role="group" aria-label="Length preset">
+                  {(['Short', 'Medium', 'Long'] as const).map((label, i) => {
+                    const v = LENGTH_PRESETS[unit][i]!;
+                    return (
+                      <button
+                        key={label}
+                        type="button"
+                        className={count === v ? 'on' : ''}
+                        aria-pressed={count === v}
+                        onClick={() => setCount(v)}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
                 </div>
               </label>
               <label className="field">
@@ -1183,8 +1241,8 @@ export function App() {
             </span>
             <span className="sp-meta">
               <span className="stats">
-                {wordCount} words &middot; {charCount} chars &middot; seed &ldquo;
-                {seed}&rdquo;
+                {wordCount} words &middot; {charCount} chars &middot; {byteCount} bytes
+                &middot; seed &ldquo;{seed}&rdquo;
               </span>
               <span className="export">
                 <button

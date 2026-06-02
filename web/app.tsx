@@ -29,19 +29,27 @@ const COUNT_DEFAULTS: Record<Unit, number> = {
   paragraphs: 3,
   sentences: 5,
   words: 24,
+  characters: 280,
 };
-const COUNT_MAX: Record<Unit, number> = { paragraphs: 12, sentences: 20, words: 120 };
+const COUNT_MAX: Record<Unit, number> = {
+  paragraphs: 12,
+  sentences: 20,
+  words: 120,
+  characters: 2000,
+};
 // Friendly length presets (Short / Medium / Long) per unit — Cupcake's trick of
 // removing the "how many?" decision while the slider stays for fine control.
 const LENGTH_PRESETS: Record<Unit, [number, number, number]> = {
   paragraphs: [1, 3, 8],
   sentences: [2, 5, 12],
   words: [10, 24, 60],
+  characters: [140, 280, 600],
 };
 const UNIT_SHORT: Record<Unit, string> = {
   paragraphs: 'para',
   sentences: 'sent',
   words: 'words',
+  characters: 'char',
 };
 
 /* ---------- appearance tweaks (persisted) ---------- */
@@ -196,7 +204,9 @@ function loadRecent(): Roll[] {
     if (typeof v.seed !== 'string' || typeof v.themeId !== 'string') continue;
     if (!getTheme(v.themeId)) continue;
     const unit: Unit =
-      v.unit === 'sentences' || v.unit === 'words' ? v.unit : 'paragraphs';
+      v.unit === 'sentences' || v.unit === 'words' || v.unit === 'characters'
+        ? v.unit
+        : 'paragraphs';
     const roll: Omit<Roll, 'key'> = {
       themeId: v.themeId,
       blend: clampInt(Number(v.blend), 0, 100, 50),
@@ -304,7 +314,9 @@ function initialState(): InitialState {
   const p = new URLSearchParams(location.search);
   const unitParam = p.get('units');
   const unit: Unit =
-    unitParam === 'sentences' || unitParam === 'words' ? unitParam : 'paragraphs';
+    unitParam === 'sentences' || unitParam === 'words' || unitParam === 'characters'
+      ? unitParam
+      : 'paragraphs';
   let count = Number(p.get('count'));
   if (!Number.isFinite(count) || count < 1) count = COUNT_DEFAULTS[unit];
   count = Math.min(count, COUNT_MAX[unit]);
@@ -1001,6 +1013,7 @@ export function App() {
                   <option value="paragraphs">Paragraphs</option>
                   <option value="sentences">Sentences</option>
                   <option value="words">Words</option>
+                  <option value="characters">Characters</option>
                 </select>
               </label>
               <label className="field">

@@ -8,7 +8,7 @@ import {
 import { type RandomFn, createRng, pick, intBetween, chance } from './rng.js';
 
 /** The unit of text to generate. */
-export type Unit = 'words' | 'sentences' | 'paragraphs';
+export type Unit = 'words' | 'sentences' | 'paragraphs' | 'characters';
 
 /** Output format. */
 export type Format = 'text' | 'html';
@@ -311,6 +311,10 @@ function buildText(opts: ResolvedOptions): string {
     const words = buildWords(opts);
     return opts.format === 'html' ? `<p>${escapeHtml(words)}</p>` : words;
   }
+  if (opts.units === 'characters') {
+    const text = blocksToText([buildCharsRich(opts)]);
+    return opts.format === 'html' ? `<p>${escapeHtml(text)}</p>` : text;
+  }
 
   const blocks: string[] = [];
   if (opts.units === 'sentences') {
@@ -481,6 +485,35 @@ function buildWordsRich(opts: ResolvedOptions): Token[] {
   return tokens.slice(0, opts.count);
 }
 
+/**
+ * Build word tokens that fit within `count` *characters*: generate whole words
+ * until the joined length reaches the budget, then drop trailing words so the
+ * result is `<= count`, never cutting a word. Shared by the string and rich
+ * paths so they stay byte-identical.
+ */
+function buildCharsRich(opts: ResolvedOptions): Token[] {
+  const { rng, theme, intensity } = opts;
+  const tokens: Token[] = [];
+  let len = 0;
+  const push = (t: string, base: string | null): void => {
+    len += (tokens.length > 0 ? 1 : 0) + t.length;
+    tokens.push({ t, base });
+  };
+  if (opts.startWithLorem) for (const w of CLASSIC_OPENING) push(w, null);
+  while (len < opts.count) {
+    const base = sampleVocab(opts);
+    const styled = theme.intensify
+      ? theme.intensify(base, intensity, rng, { emoji: opts.emoji })
+      : base;
+    push(styled, theme.blendBase ? base : null);
+  }
+  // Trim trailing whole words so the budget isn't exceeded (keep at least one).
+  while (tokens.length > 1 && len > opts.count) {
+    len -= tokens.pop()!.t.length + 1;
+  }
+  return tokens;
+}
+
 /** Render token blocks to plain text (identical to the string builders). */
 export function blocksToText(blocks: Token[][]): string {
   return blocks.map((p) => p.map((t) => t.t).join(' ')).join('\n\n');
@@ -504,6 +537,8 @@ export function generateRich(options: GenerateOptions = {}): RichResult {
   let blocks: Token[][];
   if (opts.units === 'words') {
     blocks = [buildWordsRich(opts)];
+  } else if (opts.units === 'characters') {
+    blocks = [buildCharsRich(opts)];
   } else if (opts.units === 'sentences') {
     const all: Token[] = [];
     for (let i = 0; i < opts.count; i++) {

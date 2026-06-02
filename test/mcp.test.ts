@@ -218,4 +218,8 @@ describe('buildOptions', () => {
     expect(buildOptions({ emoji: true }).emoji).toBe(true);
     expect(buildOptions({}).emoji).toBeUndefined();
   });
+
+  it('accepts the characters unit', () => {
+    expect(buildOptions({ units: 'characters', count: 100 }).units).toBe('characters');
+  });
 });

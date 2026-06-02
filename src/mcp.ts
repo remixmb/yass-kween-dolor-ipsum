@@ -89,7 +89,7 @@ export const TOOLS = [
         },
         units: {
           type: 'string',
-          enum: ['words', 'sentences', 'paragraphs'],
+          enum: ['words', 'sentences', 'paragraphs', 'characters'],
           description: 'What to count. Defaults to "paragraphs".',
         },
         count: {
@@ -172,7 +172,8 @@ export function buildOptions(args: Record<string, unknown>): GenerateOptions {
   if (
     args.units === 'words' ||
     args.units === 'sentences' ||
-    args.units === 'paragraphs'
+    args.units === 'paragraphs' ||
+    args.units === 'characters'
   ) {
     options.units = args.units;
   }

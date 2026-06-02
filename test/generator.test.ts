@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generate, ipsum } from '../src/generator.js';
+import { generate, generateRich, ipsum } from '../src/generator.js';
 import type { Theme } from '../src/themes/index.js';
 
 describe('generate — defaults', () => {
@@ -167,6 +167,32 @@ describe('generate — emoji option', () => {
     const plain = generate({ ...opts, emoji: false });
     // The only difference is the appended glyphs; strip them and the two match.
     expect(sparkled.replace(/\p{Extended_Pictographic}/gu, '')).toBe(plain);
+  });
+});
+
+describe('generate — characters unit', () => {
+  it('fits within the character budget, at a word boundary', () => {
+    for (const seed of ['a', 'b', 'c', 'd']) {
+      const text = generate({ units: 'characters', count: 200, seed, theme: 'corporate' });
+      expect(text.length).toBeLessThanOrEqual(200);
+      expect(text.length).toBeGreaterThan(0);
+      expect(text.endsWith(' ')).toBe(false);
+    }
+  });
+
+  it('is deterministic for a fixed seed', () => {
+    const o = { units: 'characters', count: 150, seed: 'det', theme: 'pirate' } as const;
+    expect(generate(o)).toBe(generate(o));
+  });
+
+  it('generate() and generateRich() stay byte-identical', () => {
+    const o = { units: 'characters', count: 180, seed: 'rich', theme: 'hacker' } as const;
+    expect(generateRich(o).text).toBe(generate(o));
+  });
+
+  it('honors startWithLorem', () => {
+    const text = generate({ units: 'characters', count: 120, seed: 's', startWithLorem: true });
+    expect(text.toLowerCase().startsWith('lorem ipsum dolor sit amet')).toBe(true);
   });
 });
 

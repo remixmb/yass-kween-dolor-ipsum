@@ -36,8 +36,9 @@ OPTIONS
   -p, --paragraphs <n>    Generate n paragraphs (default unit)
   -s, --sentences <n>     Generate n sentences
   -w, --words <n>         Generate n words
+  -C, --characters <n>    Generate n characters (trimmed to a word boundary)
   -c, --count <n>         Count for the chosen unit (default: 3)
-  -u, --units <unit>      words | sentences | paragraphs
+  -u, --units <unit>      words | sentences | paragraphs | characters
       --seed <value>      Seed for reproducible output
   -i, --temperature <n>   Blend temperature, 0–1 (or 0–100). Cold = raw Latin,
                           hot = full glam. Alias: --intensity. Defaults to the
@@ -125,7 +126,7 @@ function parseArgs(argv: string[]): ParsedArgs {
         case '-u':
         case '--units': {
           const unit = next(i++, arg) as Unit;
-          if (!['words', 'sentences', 'paragraphs'].includes(unit)) {
+          if (!['words', 'sentences', 'paragraphs', 'characters'].includes(unit)) {
             throw new Error(`Invalid unit "${unit}".`);
           }
           result.options.units = unit;
@@ -144,6 +145,11 @@ function parseArgs(argv: string[]): ParsedArgs {
         case '-w':
         case '--words':
           result.options.units = 'words';
+          result.options.count = toInt(next(i++, arg), arg);
+          break;
+        case '-C':
+        case '--characters':
+          result.options.units = 'characters';
           result.options.count = toInt(next(i++, arg), arg);
           break;
         case '--seed':

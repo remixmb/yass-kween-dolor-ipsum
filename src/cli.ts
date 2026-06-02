@@ -14,7 +14,7 @@ import {
   DEFAULT_THEME_ID,
 } from './themes/index.js';
 
-const VERSION = '1.3.0';
+const VERSION = '1.4.0';
 
 interface ParsedArgs {
   options: GenerateOptions;

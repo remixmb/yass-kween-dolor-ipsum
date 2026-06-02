@@ -23,7 +23,7 @@ import {
   DEFAULT_THEME_ID,
 } from './themes/index.js';
 
-const SERVER_INFO = { name: 'yass-ipsum', version: '1.3.0' } as const;
+const SERVER_INFO = { name: 'yass-ipsum', version: '1.4.0' } as const;
 
 /** The MCP revision we advertise when a client doesn't pin one. */
 const DEFAULT_PROTOCOL_VERSION = '2025-06-18';

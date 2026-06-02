@@ -4,6 +4,24 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and the project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [1.4.0] — 2026-06-02
+
+### Added
+
+- **Voiceprint — clone a voice from any text.** New `voiceFromText(text, opts?)`
+  export derives a `Theme` from a sample of prose: its distinctive vocabulary
+  (word frequency minus stopwords), the phrases that begin its sentences
+  (openers), and its shortest sentences (interjections), plus a deterministic
+  accent from the text. Generate placeholder that echoes the source. Zero-dep
+  and deterministic; returns a plain theme — wrap with `withLatinBlend` for the
+  Latin ↔ voice dial.
+
+### Web demo
+
+- **"Clone a voice from text"** in the playground's voice editor — paste a few
+  sentences and it builds a voice from them, shows the derived theme as JSON
+  (tweakable), and loads it live. Pairs with paste-JSON and the `.json` export.
+
 ## [1.3.0] — 2026-06-02
 
 ### Added
@@ -104,6 +122,7 @@ These ship in the live demo only (not in the published package):
 - Initial release: a zero-dependency themed placeholder-text generator —
   library, CLI (`yass-ipsum`), MCP server (`yass-ipsum-mcp`), and a web demo.
 
+[1.4.0]: https://github.com/remixmb/yass-kween-dolor-ipsum/releases/tag/v1.4.0
 [1.3.0]: https://github.com/remixmb/yass-kween-dolor-ipsum/releases/tag/v1.3.0
 [1.2.1]: https://github.com/remixmb/yass-kween-dolor-ipsum/releases/tag/v1.2.1
 [1.2.0]: https://github.com/remixmb/yass-kween-dolor-ipsum/releases/tag/v1.2.0

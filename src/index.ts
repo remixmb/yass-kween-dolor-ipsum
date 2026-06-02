@@ -44,3 +44,5 @@ export {
 } from './themes/origins.js';
 
 export { createRng, type RandomFn } from './rng.js';
+
+export { voiceFromText, type VoiceFromTextOptions } from './voiceprint.js';

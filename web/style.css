@@ -1882,3 +1882,199 @@ summary:focus-visible,
     margin-top: 0.5em;
   }
 }
+
+/* ====================================================================
+   Workbench layout · per-paragraph copy · plain dev view
+   ==================================================================== */
+
+/* ---------- two-column workbench on wide screens ---------- */
+@media (min-width: 1024px) {
+  .page {
+    max-width: 1180px;
+  }
+  .workbench {
+    display: grid;
+    grid-template-columns: minmax(360px, 1fr) minmax(0, 1.32fr);
+    gap: clamp(26px, 3.2vw, 48px);
+    align-items: start;
+  }
+  /* Keep the controls in view while a long specimen scrolls past. */
+  .controls {
+    position: sticky;
+    top: 22px;
+  }
+  .workbench .composer {
+    margin-bottom: 0;
+  }
+  .specimen {
+    min-width: 0;
+  }
+}
+
+/* ---------- per-paragraph copy ---------- */
+.op {
+  position: relative;
+}
+.op-copy {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--field);
+  color: var(--ink-faint);
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease;
+}
+.op:hover .op-copy,
+.op-copy:focus-visible {
+  opacity: 1;
+}
+.op-copy:hover {
+  color: var(--ink);
+  border-color: var(--line-strong);
+}
+/* Touch devices have no hover, so keep the affordance gently visible. */
+@media (hover: none) {
+  .op-copy {
+    opacity: 0.5;
+  }
+}
+
+/* ---------- plain-view toggle (masthead) ---------- */
+.mast-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+.plain-toggle {
+  font-family: var(--sans);
+  font-size: calc(10px * var(--fs));
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 13px;
+  cursor: pointer;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+.plain-toggle:hover {
+  color: var(--ink);
+  border-color: var(--line-strong);
+}
+.plain-toggle[aria-pressed='true'] {
+  color: var(--ink);
+  border-color: var(--ink-soft);
+  background: color-mix(in oklab, var(--ink) 8%, transparent);
+}
+
+/* ---------- plain mode: bare-bones, high-contrast dev view ----------
+   Re-themes through the CSS variables so every element adapts, then
+   flattens the editorial flourishes (gradients, drop-cap, serif). */
+#app[data-plain='1'] {
+  /* `!important` is needed because appStyle sets --voice inline on #app, and
+     inline declarations otherwise beat this attribute-selector rule. */
+  --voice: #334155 !important;
+  --accent: #334155;
+  --ink: #15171c;
+  --ink-soft: #3c4049;
+  --ink-faint: #6b6f7a;
+  --line: #d7d7d0;
+  --line-strong: #bcbcb3;
+  --field: #ffffff;
+  --card: #ffffff;
+  background: #fbfbf9;
+  color: var(--ink);
+  font-family: var(--mono);
+}
+#app[data-plain='1'] .bg {
+  display: none;
+}
+#app[data-plain='1'] .dek,
+#app[data-plain='1'] .mast-top .meta,
+#app[data-plain='1'] .lore {
+  display: none;
+}
+#app[data-plain='1'] .wordmark {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 4vw, 2.1rem);
+  letter-spacing: -0.01em;
+}
+#app[data-plain='1'] .wordmark .amp {
+  font-style: normal;
+  color: var(--ink);
+}
+#app[data-plain='1'] .rule.double {
+  border-top: none;
+  border-bottom: 1px solid var(--line);
+  padding-top: 0;
+}
+#app[data-plain='1'] .composer {
+  border-radius: 4px;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+#app[data-plain='1'] .chip,
+#app[data-plain='1'] .view-seg button,
+#app[data-plain='1'] .btn,
+#app[data-plain='1'] .text-in,
+#app[data-plain='1'] select,
+#app[data-plain='1'] .icon-btn,
+#app[data-plain='1'] .op-copy,
+#app[data-plain='1'] .badge,
+#app[data-plain='1'] .recent-item,
+#app[data-plain='1'] .cmp-card,
+#app[data-plain='1'] .plain-toggle {
+  border-radius: 3px;
+  box-shadow: none;
+  font-family: var(--mono);
+}
+#app[data-plain='1'] .chip.active,
+#app[data-plain='1'] .view-seg button.on,
+#app[data-plain='1'] .btn-primary {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #ffffff;
+}
+#app[data-plain='1'] .output {
+  font-family: var(--mono);
+  font-size: calc(0.98rem * var(--fs));
+  line-height: 1.7;
+}
+#app[data-plain='1'] .output p.lead:first-letter {
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  float: none;
+  margin: 0;
+  color: inherit;
+}
+#app[data-plain='1'] .output p {
+  animation: none;
+}
+#app[data-plain='1'] .cicero {
+  border: none;
+  text-decoration: none;
+  background: none;
+  color: inherit;
+  cursor: text;
+}

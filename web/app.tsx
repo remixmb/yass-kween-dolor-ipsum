@@ -46,12 +46,15 @@ interface Tweaks {
   face: Face;
   density: Density;
   tint: boolean;
+  /** Bare-bones, high-contrast dev view: system font, no decoration. */
+  plain: boolean;
 }
 const DEFAULT_TWEAKS: Tweaks = {
   surface: 'slate',
   face: 'spectral',
   density: 'regular',
   tint: true,
+  plain: false,
 };
 const SURFACES: Surface[] = ['slate', 'paper', 'aurora'];
 const FACES: Face[] = ['spectral', 'garamond', 'newsreader'];
@@ -129,6 +132,7 @@ function loadTweaks(): Tweaks {
     density:
       t.density && DENSITIES.includes(t.density) ? t.density : DEFAULT_TWEAKS.density,
     tint: t.tint !== false,
+    plain: t.plain === true,
   };
 }
 
@@ -343,12 +347,14 @@ export function App() {
   const [compareOpen, setCompareOpen] = useState(false);
   const [devPanel, setDevPanel] = useState(() => readStore<boolean>(DEV_KEY, false));
   const [toast, setToast] = useState('');
+  const [copiedId, setCopiedId] = useState('');
   const [eggBurst, setEggBurst] = useState(false);
   const [prideBurst, setPrideBurst] = useState(false);
   const [installEvt, setInstallEvt] = useState<BeforeInstallPromptEvent | null>(null);
   const [genId, setGenId] = useState(0);
 
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const copiedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prideFired = useRef(false);
   const devRef = useRef(devPanel);
@@ -541,6 +547,7 @@ export function App() {
       if (k === 'c') {
         e.preventDefault();
         copy(copyText, 'Copied ✨');
+        flashCopied('text');
       } else if (k === 's') {
         e.preventDefault();
         doShuffle();
@@ -631,6 +638,14 @@ export function App() {
     lastRecorded.current = currentKey;
   }
 
+  // Flash transient "✓ Copied" feedback on the button that was used, on top of
+  // the aria-live toast (a visual confirmation that doesn't rely on the toast).
+  function flashCopied(id: string) {
+    setCopiedId(id);
+    if (copiedTimer.current) clearTimeout(copiedTimer.current);
+    copiedTimer.current = setTimeout(() => setCopiedId(''), 1600);
+  }
+
   async function copy(text: string, msg: string) {
     try {
       if (navigator.clipboard?.writeText) {
@@ -652,6 +667,11 @@ export function App() {
   }
   function copyLink() {
     copy(location.origin + location.pathname + location.search, 'Link copied 🔗');
+    flashCopied('link');
+  }
+  function copyParagraph(text: string, i: number) {
+    copy(text, 'Paragraph copied ✨');
+    flashCopied(`p${i}`);
   }
 
   function download(filename: string, mime: string, data: string) {
@@ -742,6 +762,7 @@ export function App() {
       data-type={tweaks.face}
       data-density={tweaks.density}
       data-tint={tweaks.tint ? undefined : 'off'}
+      data-plain={tweaks.plain ? '1' : undefined}
       data-egg={eggActive ? '1' : undefined}
       data-pride={pride ? '1' : undefined}
       style={appStyle}
@@ -759,7 +780,18 @@ export function App() {
         <header className="masthead">
           <div className="mast-top">
             <span>A field guide to themed placeholder text</span>
-            <span className="meta">Est. Cicero, XLV B.C.</span>
+            <span className="mast-right">
+              <span className="meta">Est. Cicero, XLV B.C.</span>
+              <button
+                type="button"
+                className="plain-toggle"
+                aria-pressed={tweaks.plain}
+                title="Toggle a bare-bones, dev-friendly view"
+                onClick={() => setTweaks((t) => ({ ...t, plain: !t.plain }))}
+              >
+                {tweaks.plain ? 'Editorial view' : 'Plain view'}
+              </button>
+            </span>
           </div>
           <h1 className="wordmark">
             Lorem <span className="amp">&amp;</span> Ipsum
@@ -778,6 +810,8 @@ export function App() {
           <div className="rule double" />
         </header>
 
+        <div className="workbench">
+          <div className="controls">
         <section className="composer" id="composer" aria-label="Generator controls">
           <div className="group">
             <p className="sec-label" id="voiceLabel">
@@ -937,12 +971,19 @@ export function App() {
             <button
               type="button"
               className="btn"
-              onClick={() => copy(copyText, 'Copied ✨')}
+              onClick={() => {
+                copy(copyText, 'Copied ✨');
+                flashCopied('text');
+              }}
             >
-              &#128203; Copy {html ? 'HTML' : 'text'}
+              {copiedId === 'text' ? (
+                '✓ Copied'
+              ) : (
+                <>&#128203; Copy {html ? 'HTML' : 'text'}</>
+              )}
             </button>
             <button type="button" className="btn" onClick={copyLink}>
-              &#128279; Copy link
+              {copiedId === 'link' ? '✓ Copied' : <>&#128279; Copy link</>}
             </button>
           </div>
           <p className="kbd-hint" aria-hidden="true">
@@ -1023,6 +1064,7 @@ export function App() {
             </div>
           </details>
         )}
+          </div>
 
         <section className="specimen" aria-label="Generated text" aria-live="polite">
           <div className="specimen-top">
@@ -1092,9 +1134,20 @@ export function App() {
           ) : (
             <article className="output" key={genId}>
               {result.blocks.map((p, i) => (
-                <p key={i} className={i === 0 ? 'lead' : ''}>
-                  {renderTokens(p, displayTheme, isBlend, (tip) => showToast(tip))}
-                </p>
+                <div className="op" key={i}>
+                  <p className={i === 0 ? 'lead' : ''}>
+                    {renderTokens(p, displayTheme, isBlend, (tip) => showToast(tip))}
+                  </p>
+                  <button
+                    type="button"
+                    className="op-copy"
+                    title="Copy this paragraph"
+                    aria-label="Copy this paragraph"
+                    onClick={() => copyParagraph(p.map((t) => t.t).join(' '), i)}
+                  >
+                    {copiedId === `p${i}` ? '✓' : '⧉'}
+                  </button>
+                </div>
               ))}
             </article>
           )}
@@ -1106,6 +1159,7 @@ export function App() {
             </details>
           )}
         </section>
+        </div>
 
         {recent.length > 0 && (
           <section className="recent" aria-label="Recent rolls">

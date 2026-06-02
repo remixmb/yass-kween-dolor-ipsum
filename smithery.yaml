@@ -1,0 +1,14 @@
+# Smithery configuration — https://smithery.ai/docs
+# Runs the MCP server straight from the published npm package over stdio.
+# The package ships two bins, so we name it with --package and run yass-ipsum-mcp.
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties: {}
+    additionalProperties: false
+  commandFunction: |-
+    (config) => ({
+      command: 'npx',
+      args: ['-y', '--package=yass-kween-dolor-ipsum', 'yass-ipsum-mcp'],
+    })

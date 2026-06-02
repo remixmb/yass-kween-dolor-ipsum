@@ -21,9 +21,9 @@ function glossKey(word: string): string {
 }
 
 describe('expanded voice registry', () => {
-  it('exposes 17 visible voices plus the hidden Huttese egg', () => {
-    expect(visibleThemes).toHaveLength(17);
-    expect(themes).toHaveLength(18);
+  it('exposes 24 visible voices plus the hidden Huttese egg', () => {
+    expect(visibleThemes).toHaveLength(24);
+    expect(themes).toHaveLength(25);
     expect(themes.filter((t) => t.hidden).map((t) => t.id)).toEqual(['huttese']);
   });
 
@@ -45,6 +45,20 @@ describe('expanded voice registry', () => {
       'artist',
       'barista',
       'hoa',
+    ]) {
+      expect(getTheme(id), id).toBeDefined();
+    }
+  });
+
+  it('registers the seven newest voices', () => {
+    for (const id of [
+      'hockey',
+      'looksmaxxer',
+      'announcer',
+      'housewives',
+      'ramsay',
+      'ikea',
+      'brainrot',
     ]) {
       expect(getTheme(id), id).toBeDefined();
     }

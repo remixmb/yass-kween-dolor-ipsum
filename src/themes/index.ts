@@ -18,6 +18,13 @@ import { dutch } from './dutch.js';
 import { artist } from './artist.js';
 import { barista } from './barista.js';
 import { hoa } from './hoa.js';
+import { hockey } from './hockey.js';
+import { looksmaxxer } from './looksmaxxer.js';
+import { announcer } from './announcer.js';
+import { housewives } from './housewives.js';
+import { ramsay } from './ramsay.js';
+import { ikea } from './ikea.js';
+import { brainrot } from './brainrot.js';
 import { huttese } from './huttese.js';
 
 export type { Theme, IntensifyContext } from './types.js';
@@ -76,6 +83,13 @@ export const themes: readonly Theme[] = [
   artist,
   barista,
   hoa,
+  hockey,
+  looksmaxxer,
+  announcer,
+  housewives,
+  ramsay,
+  ikea,
+  brainrot,
   huttese,
 ].map(withLatinBlend);
 
@@ -101,6 +115,13 @@ export type ThemeId =
   | 'artist'
   | 'barista'
   | 'hoa'
+  | 'hockey'
+  | 'looksmaxxer'
+  | 'announcer'
+  | 'housewives'
+  | 'ramsay'
+  | 'ikea'
+  | 'brainrot'
   | 'huttese';
 
 /** The default theme id used when none is specified. */
@@ -160,5 +181,12 @@ export {
   artist,
   barista,
   hoa,
+  hockey,
+  looksmaxxer,
+  announcer,
+  housewives,
+  ramsay,
+  ikea,
+  brainrot,
   huttese,
 };

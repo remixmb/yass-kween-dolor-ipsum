@@ -14,7 +14,7 @@ import {
   DEFAULT_THEME_ID,
 } from './themes/index.js';
 
-const VERSION = '1.0.0';
+const VERSION = '1.0.1';
 
 interface ParsedArgs {
   options: GenerateOptions;
@@ -234,10 +234,21 @@ export function run(argv: string[]): number {
   }
 }
 
-// Only execute when run directly, not when imported by tests.
-const invokedDirectly =
-  process.argv[1] !== undefined && /cli(\.[cm]?js|\.ts)?$/.test(process.argv[1]);
+/**
+ * Whether this module is being executed directly (as a script or via its
+ * installed bin) rather than imported by tests.
+ *
+ * The published bin is named `yass-ipsum`, so when a user runs it npm invokes
+ * the symlink `…/node_modules/.bin/yass-ipsum`. The check must therefore match
+ * both the source/dist file name (`cli`) **and** the bin name — otherwise the
+ * CLI silently does nothing when run through its bin (the v1.0.0 regression).
+ */
+export function isDirectInvocation(entry: string | undefined): boolean {
+  if (entry === undefined) return false;
+  return /(?:^|[\\/])(?:cli|yass-ipsum)(?:\.[cm]?js|\.ts)?$/.test(entry);
+}
 
-if (invokedDirectly) {
+// Only execute when run directly, not when imported by tests.
+if (isDirectInvocation(process.argv[1])) {
   process.exit(run(process.argv.slice(2)));
 }

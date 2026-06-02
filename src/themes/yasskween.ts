@@ -1,5 +1,5 @@
 import type { Theme, IntensifyContext } from './types.js';
-import { type RandomFn, chance, intBetween, pick } from '../rng.js';
+import { type RandomFn, intBetween, pick } from '../rng.js';
 import { LOREM_ORIGIN_WORDS, LOREM_ORIGIN_STORY } from './origins.js';
 
 const SPARKLES = ['✨', '💅', '👑', '💖', '🔥'] as const;
@@ -77,29 +77,35 @@ function yassify(
   rng: RandomFn,
   ctx: IntensifyContext,
 ): string {
-  // Blend: sometimes swap the Latin root for full sass, more often as the dial
-  // climbs — the rest stays Latin, yielding yassified Latin.
-  let w = chance(rng, intensity * 0.5) ? pick(rng, SASS) : word;
+  // Every decision below draws unconditionally, so RNG consumption is the same
+  // at any intensity. That keeps the underlying word skeleton fixed and lets the
+  // dial layer sass on monotonically as it climbs — rather than reshuffling the
+  // whole stream each time a probability flips.
 
-  // Elongate a trailing letter for emphasis.
-  if (intensity > 0.4 && chance(rng, (intensity - 0.35) * 0.7)) {
+  // Swap the Latin root for full sass, more often as the dial climbs — the rest
+  // stays Latin, yielding yassified Latin.
+  const doSwap = rng() < intensity * 0.5;
+  const sass = pick(rng, SASS);
+  let w = doSwap ? sass : word;
+
+  // Elongate a trailing letter for emphasis (kicks in past ~0.4).
+  const doElongate = rng() < (intensity - 0.35) * 0.7;
+  const repeatCount = intBetween(rng, 1, 3);
+  const elongateAlt = pick(rng, ['yy', 'ss', 'hh']);
+  if (intensity > 0.4 && doElongate) {
     const last = w[w.length - 1] ?? '';
-    w += VOWELS.has(last.toLowerCase())
-      ? last.repeat(intBetween(rng, 1, 3))
-      : pick(rng, ['yy', 'ss', 'hh']);
+    w += VOWELS.has(last.toLowerCase()) ? last.repeat(repeatCount) : elongateAlt;
   }
 
-  // SHOUT the whole word when things get truly iconic.
-  if (intensity > 0.7 && chance(rng, (intensity - 0.65) * 0.6)) {
-    w = w.toUpperCase();
-  }
+  // SHOUT the whole word when things get truly iconic (past ~0.7).
+  const doShout = rng() < (intensity - 0.65) * 0.6;
+  if (intensity > 0.7 && doShout) w = w.toUpperCase();
 
-  // Sprinkle sparkle, scaled by intensity. Draw from the RNG either way so that
-  // disabling emoji removes only the glyph and never shifts the word stream.
-  if (chance(rng, intensity * 0.16)) {
-    const sparkle = pick(rng, SPARKLES);
-    if (ctx.emoji) w += sparkle;
-  }
+  // Sprinkle sparkle, scaled by intensity. Draw either way so disabling emoji
+  // removes only the glyph and never shifts the word stream.
+  const doSparkle = rng() < intensity * 0.16;
+  const sparkle = pick(rng, SPARKLES);
+  if (doSparkle && ctx.emoji) w += sparkle;
 
   return w;
 }

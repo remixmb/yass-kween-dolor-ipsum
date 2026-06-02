@@ -122,12 +122,13 @@ export const huttese: Theme = {
     'Bargon u noa-a-uyat.',
   ],
   intensify: (word, intensity, rng) => {
-    // Blend: sometimes swap to a genuine Huttese word, otherwise mutate the
-    // Latin phonetically — yielding huttese'd Latin.
-    if (chance(rng, intensity * 0.5)) {
-      const index = Math.floor(rng() * HUTT_WORDS.length);
-      return HUTT_WORDS[index] as string;
-    }
-    return mutate(word, intensity, rng);
+    // Draw the swap decision, the Huttese candidate, and the phonetic mutation
+    // unconditionally so RNG consumption is the same at any intensity (mutate()
+    // already draws a fixed number). The dial then crossfades smoothly from
+    // Latin to huttese'd Latin instead of reshuffling as it climbs.
+    const doSwap = rng() < intensity * 0.5;
+    const index = Math.floor(rng() * HUTT_WORDS.length);
+    const mutated = mutate(word, intensity, rng);
+    return doSwap ? (HUTT_WORDS[index] as string) : mutated;
   },
 };

@@ -16,6 +16,7 @@ import {
   getTheme,
   visibleThemes,
   withLatinBlend,
+  voiceFromText,
   DEFAULT_THEME_ID,
   EASTER_EGG_SEED,
   EASTER_EGG_THEME_ID,
@@ -516,6 +517,7 @@ export function App() {
     () => readStore<string>(CUSTOM_KEY, '') || CUSTOM_TEMPLATE,
   );
   const [customError, setCustomError] = useState('');
+  const [sampleText, setSampleText] = useState('');
 
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const copiedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -784,21 +786,54 @@ export function App() {
     setGenId((g) => g + 1);
   }
 
-  /** Parse the editor's JSON, load it as the active voice, and remember it. */
-  function applyCustom() {
-    const { theme, error } = parseCustomTheme(customDraft);
+  /** Validate an editor draft (JSON), make it the active voice, and remember it. */
+  function loadCustomFromDraft(draft: string): boolean {
+    const { theme, error } = parseCustomTheme(draft);
     if (!theme) {
       setCustomError(error);
-      return;
+      return false;
     }
     setCustomError('');
+    setCustomDraft(draft);
     setCustomTheme(theme);
-    writeStore(CUSTOM_KEY, customDraft);
+    writeStore(CUSTOM_KEY, draft);
     setThemeId(CUSTOM_ID);
     setBlend(Math.round((theme.defaultIntensity ?? 0.7) * 100));
     setGenId((g) => g + 1);
-    setCustomOpen(false);
     showToast('🧪 Custom voice loaded');
+    return true;
+  }
+
+  /** Load the JSON editor's contents as the active voice. */
+  function applyCustom() {
+    if (loadCustomFromDraft(customDraft)) setCustomOpen(false);
+  }
+
+  /** Clone a voice from pasted sample prose: derive a Theme, show its JSON, load it. */
+  function buildFromText() {
+    if (!sampleText.trim()) {
+      setCustomError('Paste some sample text to clone a voice from.');
+      return;
+    }
+    try {
+      const v = voiceFromText(sampleText, { name: 'My Sample Voice' });
+      const draft = JSON.stringify(
+        {
+          name: v.name,
+          emoji: v.emoji,
+          accent: v.accent,
+          words: v.words,
+          ...(v.openers ? { openers: v.openers } : {}),
+          ...(v.interjections ? { interjections: v.interjections } : {}),
+        },
+        null,
+        2,
+      );
+      // Keep the editor open so the derived JSON is visible and tweakable.
+      loadCustomFromDraft(draft);
+    } catch (e) {
+      setCustomError((e as Error).message);
+    }
   }
 
   function onSeed(v: string) {
@@ -1092,6 +1127,29 @@ export function App() {
             </button>
             {customOpen && (
               <div className="custom-editor">
+                <label htmlFor="customsample" className="custom-help">
+                  🎙️ <strong>Clone a voice from text.</strong> Paste a few
+                  sentences — an essay, a tweet thread, a manifesto, your group
+                  chat — and it builds a voice from the most distinctive words
+                  and the phrases that start its sentences.
+                </label>
+                <textarea
+                  id="customsample"
+                  className="custom-json"
+                  value={sampleText}
+                  spellCheck={false}
+                  rows={5}
+                  placeholder="Paste sample text here…"
+                  onChange={(e) => setSampleText(e.target.value)}
+                />
+                <div className="custom-actions">
+                  <button type="button" className="btn btn-primary" onClick={buildFromText}>
+                    Build voice from text
+                  </button>
+                </div>
+                <div className="custom-divider" aria-hidden="true">
+                  or edit the voice directly
+                </div>
                 <label htmlFor="customjson" className="custom-help">
                   Paste a voice as JSON — <code>words</code> is the only required
                   field; <code>openers</code>, <code>interjections</code>,{' '}

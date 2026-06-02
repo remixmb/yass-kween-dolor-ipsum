@@ -412,6 +412,24 @@ body {
   flex-wrap: wrap;
   gap: calc(8px * var(--u));
 }
+.custom-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: calc(4px * var(--u)) 0;
+  font-family: var(--sans);
+  font-size: calc(0.68rem * var(--fs));
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink-faint);
+}
+.custom-divider::before,
+.custom-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
 .chip {
   display: inline-flex;
   align-items: center;

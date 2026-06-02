@@ -141,4 +141,25 @@ describe('web demo (jsdom integration)', () => {
     );
     expect(c.querySelector('.custom-error')?.textContent).toMatch(/invalid json/i);
   });
+
+  it('clones a voice from pasted sample text (Voiceprint)', () => {
+    const c = renderAt('?theme=corporate&seed=t');
+    fireEvent.click(c.querySelector<HTMLButtonElement>('.custom-toggle')!);
+    fireEvent.change(c.querySelector<HTMLTextAreaElement>('#customsample')!, {
+      target: {
+        value:
+          'Kumquat kumquat orchard. The orchard grows kumquat. Kumquat season! We harvest the orchard.',
+      },
+    });
+    fireEvent.click(
+      [...c.querySelectorAll<HTMLButtonElement>('.custom-actions button')].find((b) =>
+        /build voice from text/i.test(b.textContent ?? ''),
+      )!,
+    );
+    // The derived voice (shown as JSON) keeps the source's distinctive word…
+    expect(c.querySelector<HTMLTextAreaElement>('#customjson')!.value).toMatch(/kumquat/i);
+    // …and it becomes the active, selectable voice.
+    expect(c.querySelector('.badge')?.textContent).toMatch(/My Sample Voice/i);
+    expect(c.querySelector('.voices .chip[data-id="custom"]')).not.toBeNull();
+  });
 });

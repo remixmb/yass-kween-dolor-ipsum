@@ -198,8 +198,12 @@ generate({ theme: catIpsum, units: 'sentences', count: 2 });
 ## ⌨️ CLI
 
 ```bash
-# After building, or via the published bin name:
-npx yass-ipsum --help
+# Run it without installing. The package ships two bins (yass-ipsum and
+# yass-ipsum-mcp), so name the package with -p, then the command:
+npx -p yass-kween-dolor-ipsum yass-ipsum --help
+
+# ...or install once, then call `yass-ipsum` directly:
+npm install -g yass-kween-dolor-ipsum && yass-ipsum --help
 ```
 
 ```
@@ -256,11 +260,14 @@ to `claude_desktop_config.json`:
   "mcpServers": {
     "yass-ipsum": {
       "command": "npx",
-      "args": ["-y", "yass-kween-dolor-ipsum", "yass-ipsum-mcp"]
+      "args": ["-y", "--package=yass-kween-dolor-ipsum", "yass-ipsum-mcp"]
     }
   }
 }
 ```
+
+> The `--package` (`-p`) flag is required because the package ships two bins
+> (`yass-ipsum` and `yass-ipsum-mcp`); it tells `npx` which one to run.
 
 Then ask the assistant for "three pirate paragraphs of lorem ipsum, seed ahoy"
 and it'll call the tool. Because output is seed-deterministic, results stay

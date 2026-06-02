@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './app';
+import './fonts'; // self-hosted web fonts (no third-party Google Fonts request)
 import './style.css';
 
 const root = document.getElementById('root');

@@ -65,6 +65,11 @@
     "prepublishOnly": "npm run check && npm run build"
   },
   "devDependencies": {
+    "@fontsource/eb-garamond": "^5.2.7",
+    "@fontsource/jetbrains-mono": "^5.2.8",
+    "@fontsource/newsreader": "^5.2.10",
+    "@fontsource/space-grotesk": "^5.2.10",
+    "@fontsource/spectral": "^5.2.8",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^22.10.0",

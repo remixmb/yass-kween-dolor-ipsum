@@ -120,12 +120,14 @@ ipsum.paragraphs(3, { theme: 'startup' });
 
 ### 🌡️ The temperature dial
 
-The signature themes are _blends_: every word starts as genuine Cicero Latin
-and is fused toward the voice, scaled by a **temperature** dial (`0`–`1`). Run
-it **cold** and the raw Latin shows through. Run it **hot** and the voice takes
-over — Yass Kween elongates, SHOUTs, ✨sparkles✨, and swaps in sass. Use
-`intensity` or its alias `temperature` — both drive the same dial. (In the web
-demo this is the **Blend** slider, labeled 📜 Latin ↔ the chosen voice.)
+Every voice is a _blend_: each word starts as genuine Cicero Latin and is fused
+toward the voice, scaled by a **temperature** dial (`0`–`1`). Run it **cold**
+and the raw Latin shows through; run it **hot** and the voice takes over (Yass
+Kween additionally elongates, SHOUTs, and ✨sparkles✨). Use `intensity` or its
+alias `temperature` — both drive the same dial. (In the web demo this is the
+**Blend** slider, 📜 Latin ↔ the chosen voice.) Two voices stand apart:
+**Classic** is the familiar pure-Latin lorem ipsum, and the hidden **Huttese**
+mutates the Latin phonetically.
 
 ```ts
 // ❄️ Cold (0°): the genuine lorem ipsum source resurfaces, untouched:

@@ -203,13 +203,16 @@ function bareWord(text: string): string {
  */
 function tipFor(tok: Token, theme: Theme, isBlend: boolean): string | null {
   if (tok.op) return null;
-  if (isBlend) {
-    if (!tok.base) return null;
+  // A voice word that carries a jargon gloss explains itself first — this keeps
+  // the decode-the-jargon hover working for the blended jargon voices (e.g.
+  // corporate "synergy"), where the word sits on top of a Latin root.
+  const jargon = themeGloss(theme, tok.t);
+  if (jargon) return `💡 ${bareWord(tok.t)}  ·  ${jargon}`;
+  if (isBlend && tok.base) {
     const en = gloss(tok.base);
     return `📜 ${tok.base}${en ? `  ·  ${en}` : ''}`;
   }
-  const en = themeGloss(theme, tok.t);
-  return en ? `💡 ${bareWord(tok.t)}  ·  ${en}` : null;
+  return null;
 }
 
 function renderTokens(

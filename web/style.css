@@ -962,6 +962,53 @@ select:focus,
 }
 
 /* ---------- footer ---------- */
+/* ---------- "Ipsumize the web" bookmarklet CTA ---------- */
+.ipsumize-cta {
+  margin-top: calc(34px * var(--u));
+}
+.ipsumize-blurb {
+  margin: 0;
+  max-width: 64ch;
+  font-family: var(--sans);
+  font-size: calc(0.92rem * var(--fs));
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+.bookmarklet {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: calc(4px * var(--u)) calc(11px * var(--u));
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: color-mix(in oklab, var(--accent) 14%, transparent);
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: none;
+  cursor: grab;
+  white-space: nowrap;
+  transition:
+    background-color 0.15s ease,
+    transform 0.1s ease;
+}
+.bookmarklet:hover {
+  background: color-mix(in oklab, var(--accent) 24%, transparent);
+}
+.bookmarklet:active {
+  cursor: grabbing;
+  transform: scale(0.97);
+}
+.linklike {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
 .footer {
   margin-top: calc(40px * var(--u));
   padding-top: calc(18px * var(--u));

@@ -1,4 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 import { run, isDirectInvocation } from '../src/cli.js';
 
 /** Capture stdout/stderr writes produced while running the CLI. */
@@ -198,5 +201,37 @@ describe('cli', () => {
     // The egg output differs from the same options under a plain seed.
     const plain = captureRun(['--words', '10', '--seed', 'not-jabba']);
     expect(out).not.toBe(plain.out);
+  });
+
+  it('--voiceprint clones a voice from a file', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'vp-'));
+    const file = join(dir, 'sample.txt');
+    writeFileSync(
+      file,
+      'Kumquat kumquat orchard. The orchard grows kumquat. Kumquat season, harvest the orchard kumquat.',
+    );
+    try {
+      const { code, out } = captureRun([
+        '--voiceprint',
+        file,
+        '--words',
+        '14',
+        '--temp',
+        '100',
+        '--seed',
+        'k',
+      ]);
+      expect(code).toBe(0);
+      // At full temperature the cloned voice surfaces the source's own words.
+      expect(out.toLowerCase()).toMatch(/kumquat|orchard|harvest|season|grows/);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('--voiceprint errors clearly on an unreadable file', () => {
+    const { code, err } = captureRun(['--voiceprint', '/no/such/voiceprint-file.txt', '--words', '5']);
+    expect(code).toBe(1);
+    expect(err.toLowerCase()).toMatch(/could not read/);
   });
 });

@@ -4,6 +4,21 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and the project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [1.5.0] — 2026-06-02
+
+### Added
+
+- **CLI `--voiceprint [file]`** — clone a voice from a text file (or piped
+  stdin) and generate in it: `cat README.md | yass-ipsum --voiceprint -p 1`.
+  Overrides `--theme`; honors the usual unit/count/`--temperature` flags.
+
+### Web demo
+
+- **"Ipsumize the web" bookmarklet** — drag it to your bookmarks bar, then click
+  it on any website to rewrite all of its visible text in any voice, in place,
+  with a small floating panel (shadow-DOM, so it can't clash with the page) to
+  switch voices, blend, or restore. Served as a self-contained `ipsumize.js`.
+
 ## [1.4.0] — 2026-06-02
 
 ### Added
@@ -122,6 +137,7 @@ These ship in the live demo only (not in the published package):
 - Initial release: a zero-dependency themed placeholder-text generator —
   library, CLI (`yass-ipsum`), MCP server (`yass-ipsum-mcp`), and a web demo.
 
+[1.5.0]: https://github.com/remixmb/yass-kween-dolor-ipsum/releases/tag/v1.5.0
 [1.4.0]: https://github.com/remixmb/yass-kween-dolor-ipsum/releases/tag/v1.4.0
 [1.3.0]: https://github.com/remixmb/yass-kween-dolor-ipsum/releases/tag/v1.3.0
 [1.2.1]: https://github.com/remixmb/yass-kween-dolor-ipsum/releases/tag/v1.2.1

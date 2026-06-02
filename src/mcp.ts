@@ -23,7 +23,7 @@ import {
   DEFAULT_THEME_ID,
 } from './themes/index.js';
 
-const SERVER_INFO = { name: 'yass-ipsum', version: '1.0.1' } as const;
+const SERVER_INFO = { name: 'yass-ipsum', version: '1.1.0' } as const;
 
 /** The MCP revision we advertise when a client doesn't pin one. */
 const DEFAULT_PROTOCOL_VERSION = '2025-06-18';
@@ -114,6 +114,11 @@ export const TOOLS = [
           description:
             'Begin with the classic "Lorem ipsum dolor sit amet". Defaults to false.',
         },
+        emoji: {
+          type: 'boolean',
+          description:
+            'Allow decorative emoji in the output (e.g. Yass Kween’s sparkles). Set false for clean placeholder text. Defaults to true.',
+        },
         format: {
           type: 'string',
           enum: ['text', 'html'],
@@ -185,6 +190,7 @@ export function buildOptions(args: Record<string, unknown>): GenerateOptions {
   if (typeof args.startWithLorem === 'boolean') {
     options.startWithLorem = args.startWithLorem;
   }
+  if (typeof args.emoji === 'boolean') options.emoji = args.emoji;
   if (args.format === 'html') options.format = 'html';
   return options;
 }

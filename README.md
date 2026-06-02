@@ -114,6 +114,7 @@ ipsum.paragraphs(3, { theme: 'startup' });
 | `format`                                                | `'text' \| 'html'`                       | `'text'`       | Plain text or `<p>`-wrapped HTML.              |
 | `intensity` / `temperature`                             | `number` (0–1)                           | theme default  | The temperature dial — cold to hot. See below. |
 | `startWithLorem`                                        | `boolean`                                | `false`        | Begin with "Lorem ipsum dolor sit amet".       |
+| `emoji`                                                 | `boolean`                                | `true`         | Allow decorative emoji (Yass Kween's sparkles). |
 | `minWordsPerSentence` / `maxWordsPerSentence`           | `number`                                 | `5` / `15`     | Sentence length bounds.                        |
 | `minSentencesPerParagraph` / `maxSentencesPerParagraph` | `number`                                 | `3` / `6`      | Paragraph length bounds.                       |
 
@@ -147,6 +148,9 @@ generate({
 });
 // → "QUAERAT NUMQUAMYY slay CHARACTER tiara DIVINEE unstoppableeee✨ EXCEPTURI…"
 ```
+
+Need clean filler? Set `emoji: false` (or `--no-emoji` on the CLI) to drop the
+sparkles — the words are otherwise identical, so it's safe to toggle.
 
 > **The obscure origins.** Lorem ipsum isn't gibberish — it's scrambled Latin
 > from Cicero's _de Finibus Bonorum et Malorum_ (45 BC), a treatise on pleasure
@@ -220,6 +224,7 @@ yass-ipsum [options]
                           (alias: --intensity, --temp)
       --html              Wrap output in <p> tags
       --lorem             Start with "Lorem ipsum dolor sit amet"
+      --no-emoji          Omit decorative emoji (e.g. Yass Kween's sparkles)
       --lore              Show the chosen theme's origin story
   -l, --list              List available themes
   -h, --help              Show help
@@ -232,6 +237,7 @@ yass-ipsum --theme corporate --paragraphs 2
 yass-ipsum -t pirate -s 4 --seed ahoy       # reproducible pirate text
 yass-ipsum --words 12 --html
 yass-ipsum --temperature 0.1                # cold — raw Latin resurfaces
+yass-ipsum --no-emoji                       # clean placeholder text, no sparkles
 yass-ipsum --lore                           # the obscure origins of lorem ipsum
 yass-ipsum --seed jabba                      # 🥚 ...what's this?
 ```
@@ -248,7 +254,7 @@ It exposes three tools:
 
 | Tool             | What it does                                                                |
 | ---------------- | --------------------------------------------------------------------------- |
-| `generate_ipsum` | Generate text — `theme`, `units`, `count`, `seed`, `temperature`, `format`. |
+| `generate_ipsum` | Generate text — `theme`, `units`, `count`, `seed`, `temperature`, `emoji`, `format`. |
 | `list_themes`    | Discover the available voices.                                              |
 | `theme_lore`     | Read a theme's origin story.                                                |
 

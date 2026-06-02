@@ -1,6 +1,20 @@
 import type { RandomFn } from '../rng.js';
 
 /**
+ * Generator-level context passed to {@link Theme.intensify} alongside the word
+ * and intensity, so a stylizer can honor output options without the generator
+ * special-casing any theme.
+ */
+export interface IntensifyContext {
+  /**
+   * Whether decorative emoji may be appended. When `false`, the stylizer must
+   * not add emoji — yet it must still consume the **same** RNG draws it would
+   * otherwise, so toggling emoji never changes the underlying words.
+   */
+  emoji: boolean;
+}
+
+/**
  * A theme is a data-driven vocabulary plus a little personality. The generator
  * stitches these pieces together into sentences and paragraphs, so adding a new
  * voice is as simple as dropping in another {@link Theme}.
@@ -74,7 +88,14 @@ export interface Theme {
    * For a blend theme it fuses the base Latin word toward the voice — Yass
    * Kween elongates, SHOUTs, sparkles ✨, and swaps in sass; Huttese mutates
    * Latin phonetics and swaps in genuine Huttese. For a plain theme it simply
-   * stylizes its own vocabulary. Must not introduce whitespace.
+   * stylizes its own vocabulary. Must not introduce whitespace. Receives an
+   * {@link IntensifyContext} carrying output options (e.g. whether emoji are
+   * allowed); honor its determinism rule.
    */
-  intensify?: (word: string, intensity: number, rng: RandomFn) => string;
+  intensify?: (
+    word: string,
+    intensity: number,
+    rng: RandomFn,
+    ctx: IntensifyContext,
+  ) => string;
 }

@@ -40,6 +40,12 @@ export interface GenerateOptions {
    */
   startWithLorem?: boolean;
   /**
+   * Whether a theme's stylizer may append decorative emoji (e.g. Yass Kween's
+   * sparkles). Set `false` for clean placeholder text; toggling never changes
+   * the underlying words, only the emoji. Defaults to `true`.
+   */
+  emoji?: boolean;
+  /**
    * The "temperature" of the blend, in the range `[0, 1]` (values outside are
    * clamped). Think cold → hot: turn it **down** and the output runs _cold_ —
    * calm, with the raw Latin showing through. Turn it **up** and it runs _hot_
@@ -67,6 +73,7 @@ interface ResolvedOptions {
   count: number;
   format: Format;
   startWithLorem: boolean;
+  emoji: boolean;
   intensity: number;
   minWordsPerSentence: number;
   maxWordsPerSentence: number;
@@ -117,6 +124,7 @@ function resolveOptions(options: GenerateOptions): ResolvedOptions {
     count: Math.max(1, Math.floor(options.count ?? 3)),
     format: options.format ?? 'text',
     startWithLorem: options.startWithLorem ?? false,
+    emoji: options.emoji ?? true,
     // `intensity` and its friendly alias `temperature` drive the same dial.
     intensity: clamp01(
       options.intensity ?? options.temperature ?? theme.defaultIntensity ?? 0.5,
@@ -205,7 +213,9 @@ function buildSentence(opts: ResolvedOptions, isFirst: boolean): string {
     let base = sampleVocab(opts);
     if (base === previous) base = sampleVocab(opts);
     previous = base;
-    const styled = theme.intensify ? theme.intensify(base, intensity, rng) : base;
+    const styled = theme.intensify
+      ? theme.intensify(base, intensity, rng, { emoji: opts.emoji })
+      : base;
     tokens.push(styled);
   }
 
@@ -265,7 +275,9 @@ function buildWords(opts: ResolvedOptions): string {
 
   while (words.length < opts.count) {
     const base = sampleVocab(opts);
-    words.push(theme.intensify ? theme.intensify(base, intensity, rng) : base);
+    words.push(
+      theme.intensify ? theme.intensify(base, intensity, rng, { emoji: opts.emoji }) : base,
+    );
   }
 
   return words.slice(0, opts.count).join(' ');
@@ -400,7 +412,9 @@ function buildSentenceRich(opts: ResolvedOptions, isFirst: boolean): Token[] {
     let base = sampleVocab(opts);
     if (base === previous) base = sampleVocab(opts);
     previous = base;
-    const styled = theme.intensify ? theme.intensify(base, intensity, rng) : base;
+    const styled = theme.intensify
+      ? theme.intensify(base, intensity, rng, { emoji: opts.emoji })
+      : base;
     tokens.push({ t: styled, base: theme.blendBase ? base : null });
   }
 
@@ -460,7 +474,7 @@ function buildWordsRich(opts: ResolvedOptions): Token[] {
   while (tokens.length < opts.count) {
     const base = sampleVocab(opts);
     tokens.push({
-      t: theme.intensify ? theme.intensify(base, intensity, rng) : base,
+      t: theme.intensify ? theme.intensify(base, intensity, rng, { emoji: opts.emoji }) : base,
       base: theme.blendBase ? base : null,
     });
   }

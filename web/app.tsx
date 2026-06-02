@@ -66,6 +66,7 @@ interface Roll {
   count: number;
   seed: string;
   lorem: boolean;
+  emoji: boolean;
 }
 const RECENT_KEY = 'li:recent';
 const TWEAKS_KEY = 'li:tweaks';
@@ -100,7 +101,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 function rollKey(r: Omit<Roll, 'key'>): string {
-  return [r.themeId, r.blend, r.unit, r.count, r.seed, r.lorem ? 1 : 0].join('|');
+  return [r.themeId, r.blend, r.unit, r.count, r.seed, r.lorem ? 1 : 0, r.emoji ? 1 : 0].join('|');
 }
 
 function readStore<T>(key: string, fallback: T): T {
@@ -149,6 +150,7 @@ function loadRecent(): Roll[] {
       count: Math.max(1, Math.floor(Number(v.count)) || 1),
       seed: v.seed,
       lorem: Boolean(v.lorem),
+      emoji: Boolean(v.emoji),
     };
     out.push({ key: rollKey(roll), ...roll });
     if (out.length >= RECENT_MAX) break;
@@ -236,6 +238,7 @@ interface InitialState {
   count: number;
   seed: string;
   lorem: boolean;
+  emoji: boolean;
   html: boolean;
   hutteseRevealed: boolean;
 }
@@ -266,6 +269,7 @@ function initialState(): InitialState {
     count,
     seed,
     lorem: p.get('lorem') === '1',
+    emoji: p.get('emoji') === '1',
     html: p.get('html') === '1',
     hutteseRevealed: jabba || getTheme(themeId)?.hidden === true,
   };
@@ -331,6 +335,7 @@ export function App() {
   const [count, setCount] = useState(init.count);
   const [seed, setSeed] = useState(init.seed);
   const [lorem, setLorem] = useState(init.lorem);
+  const [emoji, setEmoji] = useState(init.emoji);
   const [view, setView] = useState<'text' | 'html'>(init.html ? 'html' : 'text');
   const [hutteseRevealed, setHutteseRevealed] = useState(init.hutteseRevealed);
   const [tweaks, setTweaks] = useState<Tweaks>(loadTweaks);
@@ -363,8 +368,9 @@ export function App() {
         seed,
         intensity: blend / 100,
         startWithLorem: lorem,
+        emoji,
       }),
-    [themeId, unit, count, seed, blend, lorem],
+    [themeId, unit, count, seed, blend, lorem, emoji],
   );
   const displayTheme = result.theme;
   const isBlend = result.isBlend;
@@ -384,6 +390,7 @@ export function App() {
     count,
     seed,
     lorem,
+    emoji,
   });
 
   const chipThemes = useMemo(
@@ -422,8 +429,9 @@ export function App() {
     p.set('seed', seed);
     if (html) p.set('html', '1');
     if (lorem) p.set('lorem', '1');
+    if (emoji) p.set('emoji', '1');
     window.history.replaceState(null, '', `?${p.toString()}`);
-  }, [displayTheme, unit, count, blend, seed, html, lorem]);
+  }, [displayTheme, unit, count, blend, seed, html, lorem, emoji]);
 
   // Persist appearance tweaks and recent rolls.
   useEffect(() => writeStore(TWEAKS_KEY, tweaks), [tweaks]);
@@ -443,13 +451,14 @@ export function App() {
         count,
         seed,
         lorem,
+        emoji,
       };
       setRecent((prev) =>
         [entry, ...prev.filter((r) => r.key !== currentKey)].slice(0, RECENT_MAX),
       );
     }, 700);
     return () => clearTimeout(id);
-  }, [currentKey, displayTheme.id, blend, unit, count, seed, lorem]);
+  }, [currentKey, displayTheme.id, blend, unit, count, seed, lorem, emoji]);
 
   // Persist the (secret) developer Appearance panel unlock.
   useEffect(() => {
@@ -613,6 +622,7 @@ export function App() {
     setCount(r.count);
     setSeed(r.seed);
     setLorem(r.lorem);
+    setEmoji(r.emoji);
     setGenId((g) => g + 1);
   }
 
@@ -678,6 +688,7 @@ export function App() {
       blend,
       intensity: blend / 100,
       startWithLorem: lorem,
+      emoji,
       isBlend,
       text: plainText,
       html: htmlText,
@@ -899,6 +910,17 @@ export function App() {
                   />
                   <span>Start with &ldquo;Lorem ipsum&rdquo;</span>
                 </label>
+                {/* Only Yass Kween sparkles, so the toggle appears for it alone. */}
+                {displayTheme.id === 'yass-kween' && (
+                  <label className="toggle">
+                    <input
+                      type="checkbox"
+                      checked={emoji}
+                      onChange={(e) => setEmoji(e.target.checked)}
+                    />
+                    <span>Sparkle emoji ✨</span>
+                  </label>
+                )}
               </div>
             </div>
           </div>

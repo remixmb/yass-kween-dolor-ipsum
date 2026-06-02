@@ -20,7 +20,7 @@ import { barista } from './barista.js';
 import { hoa } from './hoa.js';
 import { huttese } from './huttese.js';
 
-export type { Theme } from './types.js';
+export type { Theme, IntensifyContext } from './types.js';
 
 /**
  * The secret seed that unlocks the hidden Huttese theme. Pass `seed: "jabba"`

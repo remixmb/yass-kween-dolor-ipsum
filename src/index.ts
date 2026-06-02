@@ -31,6 +31,7 @@ export {
   EASTER_EGG_SEED,
   EASTER_EGG_THEME_ID,
   type Theme,
+  type IntensifyContext,
   type ThemeId,
 } from './themes/index.js';
 

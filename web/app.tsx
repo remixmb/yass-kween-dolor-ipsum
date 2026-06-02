@@ -41,6 +41,12 @@ const UNIT_SHORT: Record<Unit, string> = {
 type Surface = 'slate' | 'paper' | 'aurora';
 type Face = 'spectral' | 'garamond' | 'newsreader';
 type Density = 'compact' | 'regular' | 'spacious';
+type PlainScheme = 'auto' | 'light' | 'dark';
+const SCHEME_CYCLE: Record<PlainScheme, PlainScheme> = {
+  auto: 'light',
+  light: 'dark',
+  dark: 'auto',
+};
 interface Tweaks {
   surface: Surface;
   face: Face;
@@ -48,8 +54,8 @@ interface Tweaks {
   tint: boolean;
   /** Bare-bones, high-contrast dev view: system font, no decoration. */
   plain: boolean;
-  /** Dark palette for the plain view (light otherwise). */
-  plainDark: boolean;
+  /** Plain view color scheme: follow the OS ('auto'), or force light/dark. */
+  plainScheme: PlainScheme;
 }
 const DEFAULT_TWEAKS: Tweaks = {
   surface: 'slate',
@@ -57,7 +63,7 @@ const DEFAULT_TWEAKS: Tweaks = {
   density: 'regular',
   tint: true,
   plain: false,
-  plainDark: false,
+  plainScheme: 'auto',
 };
 const SURFACES: Surface[] = ['slate', 'paper', 'aurora'];
 const FACES: Face[] = ['spectral', 'garamond', 'newsreader'];
@@ -135,6 +141,15 @@ function prefersDark(): boolean {
   );
 }
 
+/** Whether the OS asks for reduced motion — also used to keep the egg silent. */
+function prefersReducedMotion(): boolean {
+  return (
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
+}
+
 function loadTweaks(): Tweaks {
   const t = readStore<Partial<Tweaks>>(TWEAKS_KEY, {});
   return {
@@ -145,7 +160,8 @@ function loadTweaks(): Tweaks {
       t.density && DENSITIES.includes(t.density) ? t.density : DEFAULT_TWEAKS.density,
     tint: t.tint !== false,
     plain: t.plain === true,
-    plainDark: typeof t.plainDark === 'boolean' ? t.plainDark : prefersDark(),
+    plainScheme:
+      t.plainScheme === 'light' || t.plainScheme === 'dark' ? t.plainScheme : 'auto',
   };
 }
 
@@ -374,6 +390,7 @@ export function App() {
   const [view, setView] = useState<'text' | 'html'>(init.html ? 'html' : 'text');
   const [hutteseRevealed, setHutteseRevealed] = useState(init.hutteseRevealed);
   const [tweaks, setTweaks] = useState<Tweaks>(loadTweaks);
+  const [systemDark, setSystemDark] = useState(prefersDark);
   const [recent, setRecent] = useState<Roll[]>(loadRecent);
   const [compareOpen, setCompareOpen] = useState(false);
   const [devPanel, setDevPanel] = useState(() => readStore<boolean>(DEV_KEY, false));
@@ -472,7 +489,21 @@ export function App() {
 
   // Persist appearance tweaks and recent rolls.
   useEffect(() => writeStore(TWEAKS_KEY, tweaks), [tweaks]);
-  useEffect(() => writeStore(RECENT_KEY, recent), [recent]);
+  // Don't persist the hidden Huttese egg into saved history — keep it a secret
+  // that re-hides next session (a shared ?seed=jabba link still summons it).
+  useEffect(
+    () => writeStore(RECENT_KEY, recent.filter((r) => !getTheme(r.themeId)?.hidden)),
+    [recent],
+  );
+
+  // Follow the OS color scheme live while the plain view is on "auto".
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const onChange = () => setSystemDark(mq.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
 
   // Record a "roll" once the current result settles, deduped by signature. The
   // debounce keeps slider drags from flooding history with intermediate values.
@@ -519,7 +550,9 @@ export function App() {
   // The cantina audio rides with the Huttese overlay: a live-synthesized 8-bit
   // loop and Jabba's laugh (no audio files), faded out when it closes.
   useEffect(() => {
-    if (eggBurst) enterCantina();
+    // Treat reduced-motion as a "calm, please" signal: the egg still appears,
+    // but stays silent for anyone who has asked the OS to tone effects down.
+    if (eggBurst && !prefersReducedMotion()) enterCantina();
     else leaveCantina();
     return () => leaveCantina();
   }, [eggBurst]);
@@ -780,6 +813,8 @@ export function App() {
     });
   }
 
+  const plainDark =
+    tweaks.plainScheme === 'auto' ? systemDark : tweaks.plainScheme === 'dark';
   const appStyle = {
     '--voice': voice,
     '--blend': blend / 100,
@@ -793,7 +828,7 @@ export function App() {
       data-type={tweaks.face}
       data-density={tweaks.density}
       data-tint={tweaks.tint ? undefined : 'off'}
-      data-plain={tweaks.plain ? (tweaks.plainDark ? 'dark' : 'light') : undefined}
+      data-plain={tweaks.plain ? (plainDark ? 'dark' : 'light') : undefined}
       data-egg={eggActive ? '1' : undefined}
       data-pride={pride ? '1' : undefined}
       style={appStyle}
@@ -817,11 +852,16 @@ export function App() {
                 <button
                   type="button"
                   className="plain-toggle"
-                  aria-pressed={tweaks.plainDark}
-                  title="Switch the plain view between light and dark"
-                  onClick={() => setTweaks((t) => ({ ...t, plainDark: !t.plainDark }))}
+                  title="Plain view color scheme — Auto follows your system"
+                  onClick={() =>
+                    setTweaks((t) => ({ ...t, plainScheme: SCHEME_CYCLE[t.plainScheme] }))
+                  }
                 >
-                  {tweaks.plainDark ? '☾ Dark' : '☀ Light'}
+                  {tweaks.plainScheme === 'auto'
+                    ? '◐ Auto'
+                    : tweaks.plainScheme === 'dark'
+                      ? '☾ Dark'
+                      : '☀ Light'}
                 </button>
               )}
               <button

@@ -99,4 +99,46 @@ describe('web demo (jsdom integration)', () => {
     fireEvent.click(close!);
     expect(c.querySelector('.egg-burst')).toBeNull();
   });
+
+  it('loads a custom voice from the editor and generates with it', () => {
+    const c = renderAt('?theme=corporate&seed=t&temp=100');
+    // Open the "load your own voice" editor.
+    const toggle = [...c.querySelectorAll<HTMLButtonElement>('.custom-toggle')][0]!;
+    fireEvent.click(toggle);
+    const textarea = c.querySelector<HTMLTextAreaElement>('#customjson')!;
+    expect(textarea).not.toBeNull();
+    fireEvent.change(textarea, {
+      target: {
+        value: JSON.stringify({
+          name: 'Zorp',
+          emoji: '🛸',
+          accent: '#123456',
+          words: ['zorp', 'blarg', 'quux', 'vorp', 'nim', 'glonk'],
+        }),
+      },
+    });
+    const use = [...c.querySelectorAll<HTMLButtonElement>('.custom-actions button')].find((b) =>
+      /use this voice/i.test(b.textContent ?? ''),
+    )!;
+    fireEvent.click(use);
+    // The custom voice is now active: its name shows and its words appear at 100%.
+    expect(c.querySelector('.badge')?.textContent).toMatch(/Zorp/);
+    expect(outputText(c)).toMatch(/zorp|blarg|quux|vorp|nim|glonk/i);
+    // It also surfaces as a selectable chip.
+    expect(c.querySelector('.voices .chip[data-id="custom"]')).not.toBeNull();
+  });
+
+  it('rejects invalid custom-voice JSON with an error', () => {
+    const c = renderAt('?theme=corporate&seed=t');
+    fireEvent.click(c.querySelector<HTMLButtonElement>('.custom-toggle')!);
+    fireEvent.change(c.querySelector<HTMLTextAreaElement>('#customjson')!, {
+      target: { value: '{ not valid json' },
+    });
+    fireEvent.click(
+      [...c.querySelectorAll<HTMLButtonElement>('.custom-actions button')].find((b) =>
+        /use this voice/i.test(b.textContent ?? ''),
+      )!,
+    );
+    expect(c.querySelector('.custom-error')?.textContent).toMatch(/invalid json/i);
+  });
 });

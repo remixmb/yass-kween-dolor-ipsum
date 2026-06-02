@@ -9,6 +9,7 @@ import {
   getTheme,
   gloss,
   themeGloss,
+  withLatinBlend,
   LOREM_ORIGIN_WORDS,
 } from '../src/index.js';
 
@@ -21,9 +22,9 @@ function glossKey(word: string): string {
 }
 
 describe('expanded voice registry', () => {
-  it('exposes 24 visible voices plus the hidden Huttese egg', () => {
-    expect(visibleThemes).toHaveLength(24);
-    expect(themes).toHaveLength(25);
+  it('exposes 27 visible voices plus the hidden Huttese egg', () => {
+    expect(visibleThemes).toHaveLength(27);
+    expect(themes).toHaveLength(28);
     expect(themes.filter((t) => t.hidden).map((t) => t.id)).toEqual(['huttese']);
   });
 
@@ -50,7 +51,7 @@ describe('expanded voice registry', () => {
     }
   });
 
-  it('registers the seven newest voices', () => {
+  it('registers the newest voices', () => {
     for (const id of [
       'hockey',
       'looksmaxxer',
@@ -59,6 +60,9 @@ describe('expanded voice registry', () => {
       'ramsay',
       'ikea',
       'brainrot',
+      'baudrillard',
+      'aislop',
+      'rimbaud',
     ]) {
       expect(getTheme(id), id).toBeDefined();
     }
@@ -230,5 +234,33 @@ describe('Latin blend across all built-in voices', () => {
       seed: 'arr',
     }).split(/\s+/);
     for (const w of words) expect(voice.has(w), w).toBe(true);
+  });
+});
+
+describe('withLatinBlend (public helper for custom voices)', () => {
+  // What the playground's "load your own voice" feature relies on: wrapping a
+  // plain custom Theme so it crossfades onto Cicero like every built-in.
+  const custom = {
+    id: 'my-voice',
+    name: 'My Voice',
+    description: 'a test voice',
+    emoji: '🧪',
+    words: ['wibble', 'wobble', 'wubble', 'flim', 'flam', 'snerk'],
+  };
+
+  it('gives a plain custom theme the Latin <-> voice dial', () => {
+    const blended = withLatinBlend(custom);
+    expect(blended.blendBase).toBeDefined();
+    const latin = new Set(LOREM_ORIGIN_WORDS);
+    const voice = new Set(custom.words);
+    const at0 = generate({ theme: blended, units: 'words', count: 30, intensity: 0, seed: 'k' });
+    for (const w of at0.split(/\s+/)) expect(latin.has(w), w).toBe(true);
+    const at1 = generate({ theme: blended, units: 'words', count: 30, intensity: 1, seed: 'k' });
+    for (const w of at1.split(/\s+/)) expect(voice.has(w), w).toBe(true);
+  });
+
+  it('leaves an already-blending theme untouched', () => {
+    const yk = getTheme('yass-kween')!;
+    expect(withLatinBlend(yk)).toBe(yk);
   });
 });

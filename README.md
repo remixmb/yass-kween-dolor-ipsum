@@ -7,7 +7,7 @@
 A themed placeholder-text generator with a zero-dependency TypeScript core, a
 friendly CLI, and a slick interactive web demo — **"Lorem & Ipsum,"** an
 editorial _field guide to placeholder text_ built on the genuine Latin origins
-of lorem ipsum. Generate filler in **two dozen** distinct voices — from sassy
+of lorem ipsum. Generate filler in **twenty-seven** distinct voices — from sassy
 **Yass Kween** to **Legalese**, **Gen Z**, **Cat**, and **HOA Notice**.
 
 **[▶ Live demo](https://remixmb.github.io/yass-kween-dolor-ipsum/)**
@@ -35,7 +35,7 @@ of lorem ipsum. Generate filler in **two dozen** distinct voices — from sassy
 
 ## ✨ Highlights
 
-- **Two dozen hand-tuned voices** (plus one hidden 🥚), each with its own vocabulary, openers, interjections, and accent color.
+- **Twenty-seven hand-tuned voices** (plus one hidden 🥚), each with its own vocabulary, openers, interjections, and accent color.
 - **Blended voices** — the signature themes are _fusions_: **yassified Latin** and **huttese'd Latin**, built on Cicero's genuine lorem ipsum source and transformed word-by-word.
 - **A Latin ↔ Voice blend dial** — slide from raw, untouched Cicero Latin to maximally extra ✨ themed voice; in the demo it recolors the whole page toward each voice's accent. (`temperature` in the API, the "Blend" slider in the demo.)
 - **Per-word glosses, both ways** — `generateRich()` returns tokens carrying the Latin root behind each blended word (`📜 dolorem · pain`), and the plain-spoken voices ship a **jargon glossary**, so the demo decodes buzzwords too (`💡 synergy · combined output, allegedly greater than the sum`).
@@ -44,7 +44,7 @@ of lorem ipsum. Generate filler in **two dozen** distinct voices — from sassy
 - **Four units** — `words`, `sentences`, `paragraphs`, or `characters` (trimmed to a word boundary), plus optional `text` or `html` output (HTML is escaped).
 - **Zero runtime dependencies.** The core is plain, portable TypeScript; the React demo is dev-only and the published package excludes it.
 - **Works everywhere** — library (ESM + CJS), CLI, and browser. Ships full type declarations.
-- **Tested & typed** — 136 tests, ~98% line coverage, strict TypeScript, ESLint + Prettier, CI.
+- **Tested & typed** — 140 tests, ~98% line coverage, strict TypeScript, ESLint + Prettier, CI.
 
 ## 🎭 Themes
 
@@ -74,6 +74,9 @@ of lorem ipsum. Generate filler in **two dozen** distinct voices — from sassy
 | 👨‍🍳 Gordon Ramsay      | `ramsay`     | Placeholder so raw it's still mooing. It's an IDIOT SANDWICH.  |
 | 🪑 IKEA Instructions  | `ikea`       | Some assembly required. Insert dowel A into placeholder B.     |
 | 🤌 Italian Brainrot   | `brainrot`   | Tralalero tralala — unhinged filler. Bombardiro crocodilo.    |
+| 🪞 Baudrillard        | `baudrillard`| Hyperreal theory-speak. The map precedes the territory.       |
+| 🤖 AI Slop            | `aislop`     | Let's delve into this rich tapestry. I hope this helps!       |
+| ⛵ Rimbaud            | `rimbaud`    | Feverish symbolist vision. I is another.                      |
 
 ## 🚀 Quick start
 
@@ -356,7 +359,7 @@ test/               # vitest suite (rng, themes, generator, cli)
 **What is this?**
 A free, open-source **lorem ipsum / placeholder-text generator** — available as a
 zero-dependency TypeScript library, a CLI, and an installable web app. It
-generates dummy text in two dozen themed voices.
+generates dummy text in twenty-seven themed voices.
 
 **What actually _is_ lorem ipsum?**
 Not gibberish. It's scrambled Latin from Cicero's _de Finibus Bonorum et Malorum_

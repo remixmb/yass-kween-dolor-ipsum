@@ -25,6 +25,9 @@ import { housewives } from './housewives.js';
 import { ramsay } from './ramsay.js';
 import { ikea } from './ikea.js';
 import { brainrot } from './brainrot.js';
+import { baudrillard } from './baudrillard.js';
+import { aislop } from './aislop.js';
+import { rimbaud } from './rimbaud.js';
 import { huttese } from './huttese.js';
 
 export type { Theme, IntensifyContext } from './types.js';
@@ -45,7 +48,7 @@ export const EASTER_EGG_THEME_ID = 'huttese';
  * through in between. Voices that already define their own blend (Yass Kween,
  * Huttese) or that *are* the Latin (Classic) are returned untouched.
  */
-function withLatinBlend(theme: Theme): Theme {
+export function withLatinBlend(theme: Theme): Theme {
   if (theme.blendBase || theme.intensify || theme.id === 'classic') {
     return theme;
   }
@@ -90,6 +93,9 @@ export const themes: readonly Theme[] = [
   ramsay,
   ikea,
   brainrot,
+  baudrillard,
+  aislop,
+  rimbaud,
   huttese,
 ].map(withLatinBlend);
 
@@ -122,6 +128,9 @@ export type ThemeId =
   | 'ramsay'
   | 'ikea'
   | 'brainrot'
+  | 'baudrillard'
+  | 'aislop'
+  | 'rimbaud'
   | 'huttese';
 
 /** The default theme id used when none is specified. */
@@ -188,5 +197,8 @@ export {
   ramsay,
   ikea,
   brainrot,
+  baudrillard,
+  aislop,
+  rimbaud,
   huttese,
 };

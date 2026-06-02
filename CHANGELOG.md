@@ -4,6 +4,25 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/), and the project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [1.3.0] — 2026-06-02
+
+### Added
+
+- **Ten new voices**, bringing the roster to twenty-seven (plus the hidden
+  Huttese egg): 🏒 Hockey Bro, 🗿 Looksmaxxer, 🎙️ Sports Announcer,
+  🍷 Real Housewives, 👨‍🍳 Gordon Ramsay, 🪑 IKEA Instructions, 🤌 Italian
+  Brainrot, 🪞 Baudrillard, 🤖 AI Slop, and ⛵ Rimbaud. Each blends onto
+  Cicero's Latin like the rest and ships a decode-the-jargon hover glossary.
+- **`withLatinBlend`** is now exported — wrap any `Theme` to give it the
+  Latin ↔ voice blend dial (used by the demo's custom-voice loader).
+
+### Web demo
+
+- **Load your own voice** — a "test your own voice" editor in the playground:
+  paste a `Theme` as JSON (only `words` is required) and it loads live, blended
+  onto Latin like the built-ins, persisted locally, and selectable as a chip.
+  Pairs with the existing `.json` export for an export → tweak → re-import loop.
+
 ## [1.2.1] — 2026-06-02
 
 ### Fixed
@@ -85,6 +104,7 @@ These ship in the live demo only (not in the published package):
 - Initial release: a zero-dependency themed placeholder-text generator —
   library, CLI (`yass-ipsum`), MCP server (`yass-ipsum-mcp`), and a web demo.
 
+[1.3.0]: https://github.com/remixmb/yass-kween-dolor-ipsum/releases/tag/v1.3.0
 [1.2.1]: https://github.com/remixmb/yass-kween-dolor-ipsum/releases/tag/v1.2.1
 [1.2.0]: https://github.com/remixmb/yass-kween-dolor-ipsum/releases/tag/v1.2.0
 [1.1.0]: https://github.com/remixmb/yass-kween-dolor-ipsum/releases/tag/v1.1.0

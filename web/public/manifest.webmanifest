@@ -1,0 +1,20 @@
+{
+  "name": "Lorem & Ipsum — a field guide to placeholder text",
+  "short_name": "Lorem & Ipsum",
+  "description": "A themed lorem-ipsum generator built on the genuine Latin origins of lorem ipsum. Seventeen voices, a blend dial, copy & export — works offline.",
+  "id": "./",
+  "start_url": ".",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#14141b",
+  "theme_color": "#14141b",
+  "categories": ["productivity", "utilities", "developer"],
+  "icons": [
+    {
+      "src": "icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any maskable"
+    }
+  ]
+}
